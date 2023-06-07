@@ -1,0 +1,18 @@
+[package]
+name = "possu-web"
+version = "0.1.0"
+edition = "2021"
+authors = ["Lílian Ferreira de Freitas <lily.mosquitoes@gmail.com>"]
+license = "AGPL-3.0-or-later"
+
+[dependencies]
+yew = { version = "0.20", features = ["csr"] }
+yew-router = "0.17"
+wasm-bindgen = "0.2"
+# wasm-bindgen-futures = "0.4"
+# serde = "1"
+# chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.0"
+web-sys = { version = "0.3", features = ["CssStyleDeclaration"] }
