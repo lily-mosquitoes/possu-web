@@ -1,3 +1,4 @@
+mod components;
 mod pages;
 
 #[cfg(test)]
@@ -13,6 +14,46 @@ mod dom {
             id: &str,
         ) -> Option<web_sys::Element> {
             DOM::document()?.get_element_by_id(id)
+        }
+
+        pub(crate) fn get_input_by_id(
+            id: &str,
+        ) -> Option<web_sys::Element> {
+            let element = DOM::document()?.get_element_by_id(id)?;
+            match element.tag_name().as_str() {
+                "INPUT" => Some(element),
+                _ => None,
+            }
+        }
+
+        pub(crate) fn get_button_by_id(
+            id: &str,
+        ) -> Option<web_sys::Element> {
+            let element = DOM::document()?.get_element_by_id(id)?;
+            match element.tag_name().as_str() {
+                "BUTTON" => Some(element),
+                _ => None,
+            }
+        }
+
+        pub(crate) fn get_label_by_for(
+            id: &str,
+        ) -> Option<web_sys::Element> {
+            let collection =
+                DOM::document()?.get_elements_by_tag_name("LABEL");
+
+            for i in 0..collection.length() {
+                if let Some(element) = collection.item(i) {
+                    if let Some(value) = element.get_attribute("for")
+                    {
+                        if value == id {
+                            return Some(element);
+                        }
+                    }
+                }
+            }
+
+            None
         }
 
         pub(crate) fn get_computed_style(
