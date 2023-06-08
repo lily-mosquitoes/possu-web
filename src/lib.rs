@@ -1,5 +1,5 @@
 mod components;
-mod pages;
+pub mod pages;
 
 #[cfg(test)]
 mod dom {

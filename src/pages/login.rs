@@ -7,7 +7,7 @@ use yew::{
 use crate::components::Input;
 
 #[function_component(Login)]
-pub(crate) fn login() -> Html {
+pub fn login() -> Html {
     html! {
         <section id={"login"}>
             <Input
