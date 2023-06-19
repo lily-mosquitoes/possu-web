@@ -15,7 +15,7 @@ use yew_router::{
 enum Route {
     #[at("/")]
     Login,
-    #[at("/new_entry")]
+    #[at("/entries/new")]
     NewEntry,
     #[not_found]
     #[at("/404")]
