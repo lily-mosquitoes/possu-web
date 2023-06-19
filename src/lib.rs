@@ -30,6 +30,14 @@ mod dom {
             }
         }
 
+        pub(crate) fn get_select_by_id(id: &str) -> Option<web_sys::Element> {
+            let element = DOM::document()?.get_element_by_id(id)?;
+            match element.tag_name().as_str() {
+                "SELECT" => Some(element),
+                _ => None,
+            }
+        }
+
         pub(crate) fn get_button_by_id(id: &str) -> Option<web_sys::Element> {
             let element = DOM::document()?.get_element_by_id(id)?;
             match element.tag_name().as_str() {
