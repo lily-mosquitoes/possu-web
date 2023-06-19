@@ -1,4 +1,5 @@
 use wasm_bindgen::JsCast;
+use wasm_bindgen_futures::spawn_local;
 use web_sys::{
     HtmlInputElement,
     InputEvent,
@@ -6,16 +7,22 @@ use web_sys::{
 use yew::{
     function_component,
     html,
+    use_effect,
     use_state,
+    use_state_eq,
     AttrValue,
     Callback,
     Html,
 };
 
-use crate::components::{
-    Input,
-    InputMode,
-    InputType,
+use crate::{
+    components::{
+        Input,
+        InputMode,
+        Select,
+        SelectOption,
+    },
+    requests,
 };
 
 #[function_component(NewEntry)]
@@ -36,8 +43,29 @@ pub fn new_entry() -> Html {
         })
     };
 
+    let categories = use_state_eq(|| Vec::<SelectOption>::default());
+
+    {
+        let categories = categories.clone();
+        use_effect(move || {
+            spawn_local(async move {
+                let response = requests::get_categories().await;
+                if let Ok(list) = response {
+                    let options =
+                        list.iter().map(|s| SelectOption::from(&s)).collect();
+                    categories.set(options);
+                }
+            });
+        });
+    }
+
     html! {
         <section id={"new_entry"}>
+            <Select
+                id={"category"}
+                label={"Category"}
+                options={(*categories).clone()}
+            />
             <Input
                 id={"description"}
                 label={"Description"}
@@ -116,6 +144,7 @@ mod test {
     use web_sys::{
         Event,
         HtmlInputElement,
+        HtmlSelectElement,
     };
 
     use super::{
@@ -146,7 +175,65 @@ mod test {
 
     // DATETIME INPUT TESTS
     // REPEAT INPUT TESTS
-    // CATEGORY INPUT TESTS
+    // CATEGORY SELECT TESTS
+    #[wasm_bindgen_test]
+    async fn category_select_field_with_label_exists() {
+        render_new_entry().await;
+
+        let field = DOM::get_select_by_id("category_select_field");
+        let label = DOM::get_label_by_for("category_select_field");
+
+        assert!(field.is_some() && label.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn category_select_field_and_label_are_visible() {
+        render_new_entry().await;
+
+        let field = DOM::get_select_by_id("category_select_field")
+            .expect("category select field to exist");
+        let label = DOM::get_label_by_for("category_select_field")
+            .expect("category select field label to exist");
+
+        assert!(
+            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn category_select_field_label_has_expected_inner_html() {
+        render_new_entry().await;
+
+        let label = DOM::get_label_by_for("category_select_field")
+            .expect("category select field label to exist");
+
+        assert_eq!(&label.inner_html(), "Category");
+    }
+
+    #[wasm_bindgen_test]
+    async fn category_select_field_has_expected_options() {
+        render_new_entry().await;
+
+        let field = DOM::get_select_by_id("category_select_field")
+            .expect("category select field to exist");
+        let select = field
+            .dyn_into::<HtmlSelectElement>()
+            .expect("Element to be Select");
+
+        let mut select_options = vec![];
+        for index in 0..select.length() {
+            let option_element = select.get(index).expect("Element to exist");
+            let inner_html = option_element.inner_html();
+            select_options.push(inner_html);
+        }
+
+        let expected_options = crate::requests::get_categories()
+            .await
+            .expect("Categories to be returned");
+
+        assert_eq!(select_options, expected_options);
+    }
+
     // DESCRIPTION INPUT TESTS
     #[wasm_bindgen_test]
     async fn description_input_field_with_label_exists() {

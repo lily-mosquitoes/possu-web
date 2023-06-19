@@ -6,3 +6,7 @@ pub(crate) use input::{
     InputMode,
     InputType,
 };
+pub(crate) use select::{
+    Select,
+    SelectOption,
+};

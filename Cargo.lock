@@ -442,6 +442,7 @@ name = "possu-web"
 version = "0.1.0"
 dependencies = [
  "wasm-bindgen",
+ "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
  "yew",
