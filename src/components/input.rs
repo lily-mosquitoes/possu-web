@@ -2,6 +2,7 @@ use web_sys::InputEvent;
 use yew::{
     function_component,
     html,
+    AttrValue,
     Callback,
     Html,
     Properties,
@@ -48,7 +49,7 @@ pub(crate) struct InputProps {
     #[prop_or_default]
     pub(crate) placeholder: Option<&'static str>,
     #[prop_or_default]
-    pub(crate) value: Option<&'static str>,
+    pub(crate) value: Option<AttrValue>,
     #[prop_or_default]
     pub(crate) oninput: Option<Callback<InputEvent>>,
 }
@@ -72,7 +73,7 @@ pub(crate) fn input(props: &InputProps) -> Html {
                 type={props.input_type.to_string()}
                 inputmode={props.inputmode.to_string()}
                 placeholder={props.placeholder}
-                value={props.value}
+                value={props.value.clone()}
                 oninput={props.oninput.clone()}
             />
         </section>
@@ -93,7 +94,10 @@ mod test {
         HtmlInputElement,
         InputEvent,
     };
-    use yew::Callback;
+    use yew::{
+        AttrValue,
+        Callback,
+    };
 
     use super::{
         Input,
@@ -124,8 +128,12 @@ mod test {
         }
     }
 
-    fn input_event() -> Event {
-        Event::new("input").expect("valid event")
+    async fn dispatch_input_event(target: &HtmlInputElement) {
+        let event = Event::new("input").expect("valid event");
+        target
+            .dispatch_event(&event)
+            .expect("event to be dispatched");
+        yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
     fn example_callback_with_test_and_expected_value(
@@ -278,7 +286,7 @@ mod test {
         let id = "test";
         let value = "this is a value";
         let mut props = input_props_with_id(id);
-        props.value = Some(value);
+        props.value = Some(AttrValue::from(value));
         render_input(props).await;
 
         let element = DOM::get_element_by_id(&format!("{}_input_field", id))
@@ -305,7 +313,7 @@ mod test {
             .expect("Element to be Input");
 
         input.set_value(test_input_and_expected_value);
-        let _ = input.dispatch_event(&input_event());
+        dispatch_input_event(&input).await;
 
         assert_eq!(input.value(), test_input_and_expected_value);
     }
@@ -326,7 +334,7 @@ mod test {
             .expect("Element to be Input");
 
         input.set_value(&test_input_value);
-        let _ = input.dispatch_event(&input_event());
+        dispatch_input_event(&input).await;
 
         assert_eq!(input.value(), expected_value);
     }

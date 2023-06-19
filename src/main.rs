@@ -22,10 +22,10 @@ enum Route {
     NotFound,
 }
 
-fn switch(routes: Route) -> Html {
-    match routes {
-        Route::Login => html! { <pages::Login/> },
-        Route::NewEntry => html! {},
+fn switch(route: Route) -> Html {
+    match route {
+        Route::Login => html! { <pages::Login /> },
+        Route::NewEntry => html! { <pages::NewEntry /> },
         Route::NotFound => html! {
             <Redirect<Route> to={Route::Login} />
         },
