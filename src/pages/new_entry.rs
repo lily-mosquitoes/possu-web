@@ -39,9 +39,12 @@ pub fn new_entry() -> Html {
     html! {
         <section id={"new_entry"}>
             <Input
+                id={"description"}
+                label={"Description"}
+            />
+            <Input
                 id={"value"}
                 label={"Value"}
-                input_type={InputType::Text}
                 inputmode={InputMode::Numeric}
                 placeholder={"0.00"}
                 oninput={format_input}
@@ -145,6 +148,51 @@ mod test {
     // REPEAT INPUT TESTS
     // CATEGORY INPUT TESTS
     // DESCRIPTION INPUT TESTS
+    #[wasm_bindgen_test]
+    async fn description_input_field_with_label_exists() {
+        render_new_entry().await;
+
+        let field = DOM::get_input_by_id("description_input_field");
+        let label = DOM::get_label_by_for("description_input_field");
+
+        assert!(field.is_some() && label.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn description_input_field_and_label_are_visible() {
+        render_new_entry().await;
+
+        let field = DOM::get_input_by_id("description_input_field")
+            .expect("description input field to exist");
+        let label = DOM::get_label_by_for("description_input_field")
+            .expect("description input field label to exist");
+
+        assert!(
+            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
+        );
+    }
+
+    #[wasm_bindgen_test]
+    async fn description_input_field_label_has_expected_inner_html() {
+        render_new_entry().await;
+
+        let label = DOM::get_label_by_for("description_input_field")
+            .expect("description input field label to exist");
+
+        assert_eq!(&label.inner_html(), "Description");
+    }
+
+    #[wasm_bindgen_test]
+    async fn description_input_field_type_is_text() {
+        render_new_entry().await;
+
+        let field = DOM::get_input_by_id("description_input_field")
+            .expect("description input field to exist");
+        let input_type = field.get_attribute("type");
+
+        assert_eq!(input_type, Some("text".to_string()));
+    }
+
     // VALUE INPUT TESTS
     #[wasm_bindgen_test]
     fn filter_digits_works() {
