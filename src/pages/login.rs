@@ -99,7 +99,7 @@ mod test {
         assert_eq!(input_type, Some("text".to_string()));
     }
 
-    // USERNAME INPUT TESTS
+    // PASSWORD INPUT TESTS
     #[wasm_bindgen_test]
     async fn password_input_field_with_label_exists() {
         render_login().await;
