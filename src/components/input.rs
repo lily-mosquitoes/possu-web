@@ -150,18 +150,18 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn input_has_id() {
+    async fn input_is_section_with_expected_id() {
         let id = "test";
         let props = input_props_with_id(id);
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input", id));
+        let element = DOM::get_section_by_id(&format!("{}_input", id));
 
         assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn input_contains_field_with_id() {
+    async fn input_contains_field_with_expected_id() {
         let id = "test";
         let props = input_props_with_id(id);
         render_input(props).await;
@@ -169,6 +169,19 @@ mod test {
         let element = DOM::get_element_by_id(&format!("{}_input_field", id));
 
         assert!(element.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn input_field_is_inside_input_section() {
+        let id = "test";
+        let props = input_props_with_id(id);
+        render_input(props).await;
+
+        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
+            .expect("Element to exist");
+        let parent = element.parent_element().expect("Parent Element to exist");
+
+        assert_eq!(parent.id(), format!("{}_input", id));
     }
 
     #[wasm_bindgen_test]
@@ -319,7 +332,7 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn input_contains_label_with_id() {
+    async fn input_contains_label_with_expected_id() {
         let id = "test";
         let props = input_props_with_id(id);
         render_input(props).await;
@@ -327,6 +340,19 @@ mod test {
         let element = DOM::get_element_by_id(&format!("{}_input_label", id));
 
         assert!(element.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn input_label_is_inside_input_section() {
+        let id = "test";
+        let props = input_props_with_id(id);
+        render_input(props).await;
+
+        let element = DOM::get_element_by_id(&format!("{}_input_label", id))
+            .expect("Element to exist");
+        let parent = element.parent_element().expect("Parent Element to exist");
+
+        assert_eq!(parent.id(), format!("{}_input", id));
     }
 
     #[wasm_bindgen_test]

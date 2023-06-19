@@ -10,15 +10,19 @@ mod dom {
             web_sys::window()?.document()
         }
 
-        pub(crate) fn get_element_by_id(
-            id: &str,
-        ) -> Option<web_sys::Element> {
+        pub(crate) fn get_element_by_id(id: &str) -> Option<web_sys::Element> {
             DOM::document()?.get_element_by_id(id)
         }
 
-        pub(crate) fn get_input_by_id(
-            id: &str,
-        ) -> Option<web_sys::Element> {
+        pub(crate) fn get_section_by_id(id: &str) -> Option<web_sys::Element> {
+            let element = DOM::document()?.get_element_by_id(id)?;
+            match element.tag_name().as_str() {
+                "SECTION" => Some(element),
+                _ => None,
+            }
+        }
+
+        pub(crate) fn get_input_by_id(id: &str) -> Option<web_sys::Element> {
             let element = DOM::document()?.get_element_by_id(id)?;
             match element.tag_name().as_str() {
                 "INPUT" => Some(element),
@@ -26,9 +30,7 @@ mod dom {
             }
         }
 
-        pub(crate) fn get_button_by_id(
-            id: &str,
-        ) -> Option<web_sys::Element> {
+        pub(crate) fn get_button_by_id(id: &str) -> Option<web_sys::Element> {
             let element = DOM::document()?.get_element_by_id(id)?;
             match element.tag_name().as_str() {
                 "BUTTON" => Some(element),
@@ -36,16 +38,12 @@ mod dom {
             }
         }
 
-        pub(crate) fn get_label_by_for(
-            id: &str,
-        ) -> Option<web_sys::Element> {
-            let collection =
-                DOM::document()?.get_elements_by_tag_name("LABEL");
+        pub(crate) fn get_label_by_for(id: &str) -> Option<web_sys::Element> {
+            let collection = DOM::document()?.get_elements_by_tag_name("LABEL");
 
             for i in 0..collection.length() {
                 if let Some(element) = collection.item(i) {
-                    if let Some(value) = element.get_attribute("for")
-                    {
+                    if let Some(value) = element.get_attribute("for") {
                         if value == id {
                             return Some(element);
                         }
@@ -64,9 +62,7 @@ mod dom {
                 .expect("ComputedStyle to return Some")
         }
 
-        pub(crate) fn is_element_visible(
-            element: &web_sys::Element,
-        ) -> bool {
+        pub(crate) fn is_element_visible(element: &web_sys::Element) -> bool {
             match DOM::get_computed_style(element) {
                 Some(style) => {
                     let display = style
