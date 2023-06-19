@@ -4,7 +4,10 @@ use yew::{
     Html,
 };
 
-use crate::components::Input;
+use crate::components::{
+    Input,
+    InputType,
+};
 
 #[function_component(Login)]
 pub fn login() -> Html {
@@ -13,12 +16,11 @@ pub fn login() -> Html {
             <Input
                 id={"username"}
                 label={"Username"}
-                input_type={"text"}
             />
             <Input
                 id={"password"}
                 label={"Password"}
-                input_type={"password"}
+                input_type={InputType::Password}
             />
             <button
                 id={"login_button"}
@@ -72,8 +74,7 @@ mod test {
             .expect("username input field label to exist");
 
         assert!(
-            DOM::is_element_visible(&field)
-                && DOM::is_element_visible(&label)
+            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
         );
     }
 
@@ -119,8 +120,7 @@ mod test {
             .expect("password input field label to exist");
 
         assert!(
-            DOM::is_element_visible(&field)
-                && DOM::is_element_visible(&label)
+            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
         );
     }
 

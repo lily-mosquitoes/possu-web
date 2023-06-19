@@ -1,3 +1,6 @@
 mod input;
 
-pub(crate) use input::Input;
+pub(crate) use input::{
+    Input,
+    InputType,
+};
