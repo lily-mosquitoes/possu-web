@@ -1,4 +1,5 @@
 mod input;
+mod monetary_input;
 mod select;
 
 pub(crate) use input::{
@@ -6,6 +7,7 @@ pub(crate) use input::{
     InputMode,
     InputType,
 };
+pub(crate) use monetary_input::MonetaryInput;
 pub(crate) use select::{
     Select,
     SelectOption,
