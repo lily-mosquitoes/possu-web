@@ -54,11 +54,7 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
     }
     let months: Vec<SelectOption> = months
         .iter()
-        .map(|v| {
-            let mut opt = SelectOption::from(*v);
-            opt.selected = v == &*selected_month;
-            opt
-        })
+        .map(|v| SelectOption::from(*v).selected(v == &*selected_month))
         .collect();
 
     let days = props
@@ -69,11 +65,7 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
     }
     let days: Vec<SelectOption> = days
         .iter()
-        .map(|v| {
-            let mut opt = SelectOption::from(*v);
-            opt.selected = v == &*selected_day;
-            opt
-        })
+        .map(|v| SelectOption::from(*v).selected(v == &*selected_day))
         .collect();
 
     html! {
