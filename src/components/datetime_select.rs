@@ -80,17 +80,17 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
         <section id={format!("{}_datetime_select", props.id)}>
             <Select
                 id={format!("{}_year", props.id)}
-                label={"whatever"}
+                label={"Year"}
                 options={Rc::from(years)}
             />
             <Select
                 id={format!("{}_month", props.id)}
-                label={"whatever"}
+                label={"Month"}
                 options={Rc::from(months)}
             />
             <Select
                 id={format!("{}_day", props.id)}
-                label={"whatever"}
+                label={"Day"}
                 options={Rc::from(days)}
             />
         </section>
@@ -170,6 +170,31 @@ mod test {
     }
 
     #[wasm_bindgen_test]
+    async fn datetime_select_contains_year_select_label() {
+        let id = "test";
+        let props = datetime_select_props_with_id(id);
+        render_datetime_select(props).await;
+
+        let year_label =
+            DOM::get_label_by_for(&format!("{}_year_select_field", id));
+
+        assert!(year_label.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn year_select_label_has_expected_inner_html() {
+        let id = "test";
+        let props = datetime_select_props_with_id(id);
+        render_datetime_select(props).await;
+
+        let year_label =
+            DOM::get_label_by_for(&format!("{}_year_select_field", id))
+                .expect("Element to exist");
+
+        assert_eq!(year_label.inner_html(), "Year");
+    }
+
+    #[wasm_bindgen_test]
     async fn datetime_select_contains_month_select() {
         let id = "test";
         let props = datetime_select_props_with_id(id);
@@ -182,6 +207,31 @@ mod test {
     }
 
     #[wasm_bindgen_test]
+    async fn datetime_select_contains_month_select_label() {
+        let id = "test";
+        let props = datetime_select_props_with_id(id);
+        render_datetime_select(props).await;
+
+        let month_label =
+            DOM::get_label_by_for(&format!("{}_month_select_field", id));
+
+        assert!(month_label.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn month_select_label_has_expected_inner_html() {
+        let id = "test";
+        let props = datetime_select_props_with_id(id);
+        render_datetime_select(props).await;
+
+        let month_label =
+            DOM::get_label_by_for(&format!("{}_month_select_field", id))
+                .expect("Element to exist");
+
+        assert_eq!(month_label.inner_html(), "Month");
+    }
+
+    #[wasm_bindgen_test]
     async fn datetime_select_contains_day_select() {
         let id = "test";
         let props = datetime_select_props_with_id(id);
@@ -190,6 +240,31 @@ mod test {
         let day = DOM::get_select_by_id(&format!("{}_day_select_field", id));
 
         assert!(day.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_contains_day_select_label() {
+        let id = "test";
+        let props = datetime_select_props_with_id(id);
+        render_datetime_select(props).await;
+
+        let day_label =
+            DOM::get_label_by_for(&format!("{}_day_select_field", id));
+
+        assert!(day_label.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn day_select_label_has_expected_inner_html() {
+        let id = "test";
+        let props = datetime_select_props_with_id(id);
+        render_datetime_select(props).await;
+
+        let day_label =
+            DOM::get_label_by_for(&format!("{}_day_select_field", id))
+                .expect("Element to exist");
+
+        assert_eq!(day_label.inner_html(), "Day");
     }
 
     #[wasm_bindgen_test]
