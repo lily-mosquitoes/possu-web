@@ -7,6 +7,9 @@ use chrono::{
     TimeZone,
 };
 
+pub(crate) type Year = i32;
+pub(crate) type Day = u32;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub(crate) enum Month {
@@ -76,7 +79,7 @@ impl<T: TimeZone> DateTimeRange<T> {
         }
     }
 
-    pub(crate) fn list_years(&self) -> Vec<i32> {
+    pub(crate) fn list_years(&self) -> Vec<Year> {
         if self.start > self.end {
             return Vec::new();
         }
@@ -84,7 +87,7 @@ impl<T: TimeZone> DateTimeRange<T> {
         (self.start.year()..=self.end.year()).collect()
     }
 
-    pub(crate) fn list_months_for_year(&self, year: i32) -> Vec<Month> {
+    pub(crate) fn list_months_for_year(&self, year: Year) -> Vec<Month> {
         if self.list_years().contains(&year) != true {
             return Vec::new();
         }
@@ -105,9 +108,9 @@ impl<T: TimeZone> DateTimeRange<T> {
 
     pub(crate) fn list_days_for_year_and_month(
         &self,
-        year: i32,
+        year: Year,
         month: Month,
-    ) -> Vec<u32> {
+    ) -> Vec<Day> {
         if self.list_months_for_year(year).contains(&month) != true {
             return Vec::new();
         }

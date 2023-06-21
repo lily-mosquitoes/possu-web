@@ -10,7 +10,4 @@ pub(crate) use input::{
     InputType,
 };
 pub(crate) use monetary_input::MonetaryInput;
-pub(crate) use select::{
-    Select,
-    SelectOption,
-};
+pub(crate) use select::Select;

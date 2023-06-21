@@ -8,22 +8,7 @@ use yew::{
     Properties,
 };
 
-#[derive(Clone, PartialEq)]
-pub(crate) struct SelectOption {
-    pub(crate) value: AttrValue,
-    pub(crate) selected: bool,
-    pub(crate) disabled: bool,
-}
-
-impl SelectOption {
-    pub(crate) fn from(s: &str) -> Self {
-        Self {
-            value: AttrValue::from(s.to_owned()),
-            selected: false,
-            disabled: false,
-        }
-    }
-}
+use crate::types::select::SelectOption;
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct SelectProps {
@@ -85,10 +70,12 @@ mod test {
 
     use super::{
         Select,
-        SelectOption,
         SelectProps,
     };
-    use crate::dom::DOM;
+    use crate::{
+        dom::DOM,
+        types::select::SelectOption,
+    };
 
     wasm_bindgen_test_configure!(run_in_browser);
 

@@ -14,9 +14,9 @@ use crate::{
         Input,
         MonetaryInput,
         Select,
-        SelectOption,
     },
     requests,
+    types::select::SelectOption,
 };
 
 #[function_component(NewEntry)]
@@ -30,7 +30,7 @@ pub fn new_entry() -> Html {
                 let response = requests::get_categories().await;
                 if let Ok(list) = response {
                     let options =
-                        list.iter().map(|s| SelectOption::from(&s)).collect();
+                        list.iter().map(|s| SelectOption::from(s)).collect();
                     categories.set(options);
                 }
             });

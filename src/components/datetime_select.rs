@@ -16,13 +16,13 @@ use yew::{
 };
 
 use crate::{
-    components::{
-        Select,
-        SelectOption,
-    },
-    types::datetime::{
-        DateTimeRange,
-        Month,
+    components::Select,
+    types::{
+        datetime::{
+            DateTimeRange,
+            Month,
+        },
+        select::SelectOption,
     },
 };
 
@@ -39,29 +39,23 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
     let selected_month = use_state_eq(|| Month::from_u32(Utc::now().month()));
     let selected_day = use_state_eq(|| Utc::now().day());
 
-    let section_id = format!("{}_datetime_select", props.id);
-
     let years = props.datetime_range.list_years();
     if years.contains(&*selected_year) != true && years.len() > 0 {
-        selected_year.set(years[0]);
+        selected_year.set(years[years.len() - 1]);
     }
     let years: Vec<SelectOption> = years
         .iter()
-        .map(|v| {
-            let mut opt = SelectOption::from(&v.to_string());
-            opt.selected = v == &*selected_year;
-            opt
-        })
+        .map(|v| SelectOption::from(*v).selected(v == &*selected_year))
         .collect();
 
     let months = props.datetime_range.list_months_for_year(*selected_year);
     if months.contains(&*selected_month) != true && months.len() > 0 {
-        selected_month.set(months[0]);
+        selected_month.set(months[months.len() - 1]);
     }
     let months: Vec<SelectOption> = months
         .iter()
         .map(|v| {
-            let mut opt = SelectOption::from(&(*v as u32).to_string());
+            let mut opt = SelectOption::from(*v);
             opt.selected = v == &*selected_month;
             opt
         })
@@ -71,19 +65,19 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
         .datetime_range
         .list_days_for_year_and_month(*selected_year, *selected_month);
     if days.contains(&*selected_day) != true && days.len() > 0 {
-        selected_day.set(days[0]);
+        selected_day.set(days[days.len() - 1]);
     }
     let days: Vec<SelectOption> = days
         .iter()
         .map(|v| {
-            let mut opt = SelectOption::from(&v.to_string());
+            let mut opt = SelectOption::from(*v);
             opt.selected = v == &*selected_day;
             opt
         })
         .collect();
 
     html! {
-        <section id={section_id}>
+        <section id={format!("{}_datetime_select", props.id)}>
             <Select
                 id={format!("{}_year", props.id)}
                 label={"whatever"}
@@ -98,16 +92,6 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
                 id={format!("{}_day", props.id)}
                 label={"whatever"}
                 options={Rc::from(days)}
-            />
-            <Select
-                id={format!("{}_hour", props.id)}
-                label={"whatever"}
-                options={Rc::from(vec![])}
-            />
-            <Select
-                id={format!("{}_minute", props.id)}
-                label={"whatever"}
-                options={Rc::from(vec![])}
             />
         </section>
     }
@@ -206,29 +190,6 @@ mod test {
         let day = DOM::get_select_by_id(&format!("{}_day_select_field", id));
 
         assert!(day.is_some());
-    }
-
-    #[wasm_bindgen_test]
-    async fn datetime_select_contains_hour_select() {
-        let id = "test";
-        let props = datetime_select_props_with_id(id);
-        render_datetime_select(props).await;
-
-        let hour = DOM::get_select_by_id(&format!("{}_hour_select_field", id));
-
-        assert!(hour.is_some());
-    }
-
-    #[wasm_bindgen_test]
-    async fn datetime_select_contains_minute_select() {
-        let id = "test";
-        let props = datetime_select_props_with_id(id);
-        render_datetime_select(props).await;
-
-        let minute =
-            DOM::get_select_by_id(&format!("{}_minute_select_field", id));
-
-        assert!(minute.is_some());
     }
 
     #[wasm_bindgen_test]
