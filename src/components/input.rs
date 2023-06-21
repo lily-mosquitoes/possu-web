@@ -40,14 +40,14 @@ impl std::fmt::Display for InputMode {
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct InputProps {
-    pub(crate) id: &'static str,
-    pub(crate) label: &'static str,
+    pub(crate) id: AttrValue,
+    pub(crate) label: AttrValue,
     #[prop_or(InputType::Text)]
     pub(crate) input_type: InputType,
     #[prop_or(InputMode::Text)]
     pub(crate) inputmode: InputMode,
     #[prop_or_default]
-    pub(crate) placeholder: Option<&'static str>,
+    pub(crate) placeholder: Option<AttrValue>,
     #[prop_or_default]
     pub(crate) value: Option<AttrValue>,
     #[prop_or_default]
@@ -66,13 +66,13 @@ pub(crate) fn input(props: &InputProps) -> Html {
                 id={input_label_id}
                 for={input_field_id.clone()}
             >
-                { props.label }
+                { props.label.clone() }
             </label>
             <input
                 id={input_field_id}
                 type={props.input_type.to_string()}
                 inputmode={props.inputmode.to_string()}
-                placeholder={props.placeholder}
+                placeholder={props.placeholder.clone()}
                 value={props.value.clone()}
                 oninput={props.oninput.clone()}
             />
@@ -116,10 +116,10 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
-    fn input_props_with_id(id: &'static str) -> InputProps {
+    fn input_props_with_id(id: &str) -> InputProps {
         InputProps {
-            id,
-            label: "",
+            id: AttrValue::from(id.to_owned()),
+            label: AttrValue::from(""),
             input_type: InputType::Text,
             inputmode: InputMode::Text,
             placeholder: None,
@@ -253,7 +253,7 @@ mod test {
         let id = "test";
         let placeholder = "this is a placeholder";
         let mut props = input_props_with_id(id);
-        props.placeholder = Some(placeholder);
+        props.placeholder = Some(AttrValue::from(placeholder));
         render_input(props).await;
 
         let element = DOM::get_element_by_id(&format!("{}_input_field", id))
@@ -395,7 +395,7 @@ mod test {
         let id = "test";
         let label = "test label text";
         let mut props = input_props_with_id(id);
-        props.label = label;
+        props.label = AttrValue::from(label);
         render_input(props).await;
 
         let element = DOM::get_element_by_id(&format!("{}_input_label", id))

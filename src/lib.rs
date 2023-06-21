@@ -1,6 +1,7 @@
 mod components;
 pub mod pages;
 mod requests;
+mod types;
 
 #[cfg(test)]
 mod dom {

@@ -20,8 +20,8 @@ use crate::components::{
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct MonetaryInputProps {
-    pub(crate) id: &'static str,
-    pub(crate) label: &'static str,
+    pub(crate) id: AttrValue,
+    pub(crate) label: AttrValue,
 }
 
 #[function_component(MonetaryInput)]
@@ -45,8 +45,8 @@ pub(crate) fn monetary_input(props: &MonetaryInputProps) -> Html {
 
     html! {
         <Input
-            id={props.id}
-            label={props.label}
+            id={props.id.clone()}
+            label={props.label.clone()}
             inputmode={InputMode::Numeric}
             placeholder={"0.00"}
             oninput={format_input}
@@ -118,6 +118,7 @@ mod test {
         Event,
         HtmlInputElement,
     };
+    use yew::AttrValue;
 
     use super::{
         add_thousands_separator,
@@ -232,8 +233,11 @@ mod test {
     #[wasm_bindgen_test]
     async fn monetary_input_field_with_label_exists() {
         let id = "test";
-        let label = "Test";
-        render_monetary_input(MonetaryInputProps { id, label }).await;
+        let props = MonetaryInputProps {
+            id: AttrValue::from(id),
+            label: AttrValue::from("Test"),
+        };
+        render_monetary_input(props).await;
 
         let field = DOM::get_input_by_id(&format!("{}_input_field", id));
         let label = DOM::get_label_by_for(&format!("{}_input_field", id));
@@ -245,7 +249,11 @@ mod test {
     async fn monetary_input_field_label_has_expected_inner_html() {
         let id = "test";
         let label = "Test";
-        render_monetary_input(MonetaryInputProps { id, label }).await;
+        let props = MonetaryInputProps {
+            id: AttrValue::from(id),
+            label: AttrValue::from(label),
+        };
+        render_monetary_input(props).await;
 
         let label_element =
             DOM::get_label_by_for(&format!("{}_input_field", id))
@@ -257,8 +265,11 @@ mod test {
     #[wasm_bindgen_test]
     async fn monetary_input_field_type_is_text() {
         let id = "test";
-        let label = "Test";
-        render_monetary_input(MonetaryInputProps { id, label }).await;
+        let props = MonetaryInputProps {
+            id: AttrValue::from(id),
+            label: AttrValue::from("Test"),
+        };
+        render_monetary_input(props).await;
 
         let field = DOM::get_input_by_id(&format!("{}_input_field", id))
             .expect("monetary input field to exist");
@@ -270,8 +281,11 @@ mod test {
     #[wasm_bindgen_test]
     async fn monetary_input_field_inputmode_is_numeric() {
         let id = "test";
-        let label = "Test";
-        render_monetary_input(MonetaryInputProps { id, label }).await;
+        let props = MonetaryInputProps {
+            id: AttrValue::from(id),
+            label: AttrValue::from("Test"),
+        };
+        render_monetary_input(props).await;
 
         let field = DOM::get_input_by_id(&format!("{}_input_field", id))
             .expect("monetary input field to exist");
@@ -283,8 +297,11 @@ mod test {
     #[wasm_bindgen_test]
     async fn monetary_input_field_placeholder_has_expected_string() {
         let id = "test";
-        let label = "Test";
-        render_monetary_input(MonetaryInputProps { id, label }).await;
+        let props = MonetaryInputProps {
+            id: AttrValue::from(id),
+            label: AttrValue::from("Test"),
+        };
+        render_monetary_input(props).await;
 
         let field = DOM::get_input_by_id(&format!("{}_input_field", id))
             .expect("monetary input field to exist");
@@ -296,8 +313,11 @@ mod test {
     #[wasm_bindgen_test]
     async fn monetary_input_field_value_is_formatted_on_input_event() {
         let id = "test";
-        let label = "Test";
-        render_monetary_input(MonetaryInputProps { id, label }).await;
+        let props = MonetaryInputProps {
+            id: AttrValue::from(id),
+            label: AttrValue::from("Test"),
+        };
+        render_monetary_input(props).await;
 
         let field = DOM::get_input_by_id(&format!("{}_input_field", id))
             .expect("value input field to exist");

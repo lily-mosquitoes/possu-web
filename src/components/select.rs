@@ -25,27 +25,27 @@ impl SelectOption {
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct SelectProps {
-    pub(crate) id: &'static str,
-    pub(crate) label: &'static str,
+    pub(crate) id: AttrValue,
+    pub(crate) label: AttrValue,
     pub(crate) options: Vec<SelectOption>,
 }
 
 #[function_component(Select)]
 pub(crate) fn select(props: &SelectProps) -> Html {
-    let input_id = format!("{}_select", props.id);
-    let input_label_id = format!("{}_select_label", props.id);
-    let input_field_id = format!("{}_select_field", props.id);
+    let section_id = format!("{}_select", props.id);
+    let label_id = format!("{}_select_label", props.id);
+    let field_id = format!("{}_select_field", props.id);
 
     html! {
-        <section id={input_id}>
+        <section id={section_id}>
             <label
-                id={input_label_id}
-                for={input_field_id.clone()}
+                id={label_id}
+                for={field_id.clone()}
             >
-                { props.label }
+                { props.label.clone() }
             </label>
             <select
-                id={input_field_id}
+                id={field_id}
             >
             {
                 props.options.iter().map(|option| {
@@ -76,6 +76,7 @@ mod test {
         HtmlOptionElement,
         HtmlSelectElement,
     };
+    use yew::AttrValue;
 
     use super::{
         Select,
@@ -93,10 +94,10 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
-    fn select_props_with_id(id: &'static str) -> SelectProps {
+    fn select_props_with_id(id: &str) -> SelectProps {
         SelectProps {
-            id,
-            label: "",
+            id: AttrValue::from(id.to_owned()),
+            label: AttrValue::from(""),
             options: vec![],
         }
     }
@@ -326,7 +327,7 @@ mod test {
         let id = "test";
         let label = "test label text";
         let mut props = select_props_with_id(id);
-        props.label = label;
+        props.label = AttrValue::from(label);
         render_select(props).await;
 
         let element = DOM::get_element_by_id(&format!("{}_select_label", id))
