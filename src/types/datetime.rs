@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use chrono::{
     DateTime,
     Datelike,
@@ -62,13 +64,16 @@ impl Month {
 
 #[derive(Clone, PartialEq)]
 pub(crate) struct DateTimeRange<T: TimeZone> {
-    pub(crate) start: DateTime<T>,
-    pub(crate) end: DateTime<T>,
+    pub(crate) start: Rc<DateTime<T>>,
+    pub(crate) end: Rc<DateTime<T>>,
 }
 
 impl<T: TimeZone> DateTimeRange<T> {
     pub(crate) fn from(start: DateTime<T>, end: DateTime<T>) -> Self {
-        Self { start, end }
+        Self {
+            start: Rc::new(start),
+            end: Rc::new(end),
+        }
     }
 
     pub(crate) fn list_years(&self) -> Vec<i32> {

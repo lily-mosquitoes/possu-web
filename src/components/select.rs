@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use yew::{
     function_component,
     html,
@@ -27,7 +29,7 @@ impl SelectOption {
 pub(crate) struct SelectProps {
     pub(crate) id: AttrValue,
     pub(crate) label: AttrValue,
-    pub(crate) options: Vec<SelectOption>,
+    pub(crate) options: Rc<[SelectOption]>,
 }
 
 #[function_component(Select)]
@@ -65,7 +67,10 @@ pub(crate) fn select(props: &SelectProps) -> Html {
 
 #[cfg(test)]
 mod test {
-    use std::time::Duration;
+    use std::{
+        rc::Rc,
+        time::Duration,
+    };
 
     use wasm_bindgen::JsCast;
     use wasm_bindgen_test::{
@@ -98,7 +103,7 @@ mod test {
         SelectProps {
             id: AttrValue::from(id.to_owned()),
             label: AttrValue::from(""),
-            options: vec![],
+            options: Rc::new([]),
         }
     }
 

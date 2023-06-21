@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use wasm_bindgen_futures::spawn_local;
 use yew::{
     function_component,
@@ -40,7 +42,7 @@ pub fn new_entry() -> Html {
             <Select
                 id={"category"}
                 label={"Category"}
-                options={(*categories).clone()}
+                options={Rc::from((*categories).clone())}
             />
             <Input
                 id={"description"}

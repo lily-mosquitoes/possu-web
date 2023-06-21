@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use chrono::{
     DateTime,
     Datelike,
@@ -28,7 +30,7 @@ use crate::{
 pub(crate) struct DateTimeSelectProps {
     id: AttrValue,
     label: AttrValue,
-    datetime_range: DateTimeRange<Utc>,
+    datetime_range: Rc<DateTimeRange<Utc>>,
 }
 
 #[function_component(DateTimeSelect)]
@@ -85,27 +87,27 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
             <Select
                 id={format!("{}_year", props.id)}
                 label={"whatever"}
-                options={years}
+                options={Rc::from(years)}
             />
             <Select
                 id={format!("{}_month", props.id)}
                 label={"whatever"}
-                options={months}
+                options={Rc::from(months)}
             />
             <Select
                 id={format!("{}_day", props.id)}
                 label={"whatever"}
-                options={days}
+                options={Rc::from(days)}
             />
             <Select
                 id={format!("{}_hour", props.id)}
                 label={"whatever"}
-                options={vec![]}
+                options={Rc::from(vec![])}
             />
             <Select
                 id={format!("{}_minute", props.id)}
                 label={"whatever"}
-                options={vec![]}
+                options={Rc::from(vec![])}
             />
         </section>
     }
@@ -113,7 +115,10 @@ pub(crate) fn date_select(props: &DateTimeSelectProps) -> Html {
 
 #[cfg(test)]
 mod test {
-    use std::time::Duration;
+    use std::{
+        rc::Rc,
+        time::Duration,
+    };
 
     use chrono::{
         Datelike,
@@ -153,7 +158,7 @@ mod test {
         DateTimeSelectProps {
             id: AttrValue::from(id.to_owned()),
             label: AttrValue::from(""),
-            datetime_range: DateTimeRange::from(date1, date2),
+            datetime_range: Rc::new(DateTimeRange::from(date1, date2)),
         }
     }
 
@@ -232,7 +237,8 @@ mod test {
         let start_date = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
         let end_date = Utc.with_ymd_and_hms(2005, 1, 1, 0, 0, 0).unwrap();
         let mut props = datetime_select_props_with_id(id);
-        props.datetime_range = DateTimeRange::from(start_date, end_date);
+        props.datetime_range =
+            Rc::new(DateTimeRange::from(start_date, end_date));
         render_datetime_select(props).await;
 
         let select =
@@ -264,7 +270,8 @@ mod test {
         let start_date = Utc.with_ymd_and_hms(1990, 3, 1, 0, 0, 0).unwrap();
         let end_date = Utc.with_ymd_and_hms(1990, 8, 1, 0, 0, 0).unwrap();
         let mut props = datetime_select_props_with_id(id);
-        props.datetime_range = DateTimeRange::from(start_date, end_date);
+        props.datetime_range =
+            Rc::new(DateTimeRange::from(start_date, end_date));
         render_datetime_select(props).await;
 
         let select =
@@ -297,7 +304,8 @@ mod test {
         let start_date = Utc.with_ymd_and_hms(1990, 8, 2, 0, 0, 0).unwrap();
         let end_date = Utc.with_ymd_and_hms(1990, 8, 16, 0, 0, 0).unwrap();
         let mut props = datetime_select_props_with_id(id);
-        props.datetime_range = DateTimeRange::from(start_date, end_date);
+        props.datetime_range =
+            Rc::new(DateTimeRange::from(start_date, end_date));
         render_datetime_select(props).await;
 
         let select = DOM::get_select_by_id(&format!("{}_day_select_field", id))
