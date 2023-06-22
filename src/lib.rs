@@ -5,6 +5,8 @@ mod types;
 
 #[cfg(test)]
 mod dom {
+    use wasm_bindgen::JsCast;
+
     pub(crate) struct DOM;
 
     impl DOM {
@@ -37,6 +39,17 @@ mod dom {
             match element.tag_name().as_str() {
                 "SELECT" => Some(element),
                 _ => None,
+            }
+        }
+
+        pub(crate) fn get_html_select_by_id(
+            id: &str,
+        ) -> Option<web_sys::HtmlSelectElement> {
+            let result = DOM::get_select_by_id(id)?
+                .dyn_into::<web_sys::HtmlSelectElement>();
+            match result {
+                Ok(select) => Some(select),
+                Err(_) => None,
             }
         }
 

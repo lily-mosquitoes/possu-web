@@ -256,7 +256,7 @@ mod test {
             // incorrect date order
             (make_date(2000, 1, 1), make_date(1999, 1, 1), 1999, 1, 1..=0),
             // single day range is correct
-            (make_date(1999, 1, 4), make_date(1999, 1, 5), 1999, 1, 4..=5),
+            (make_date(1999, 1, 4), make_date(1999, 1, 4), 1999, 1, 4..=4),
             // multi day range is correct
             (make_date(1999, 1, 2), make_date(1999, 1, 20), 1999, 1, 2..=20),
             // year out of range
