@@ -1,9 +1,11 @@
 use std::rc::Rc;
 
+use web_sys::Event;
 use yew::{
     function_component,
     html,
     AttrValue,
+    Callback,
     Html,
     Properties,
 };
@@ -15,6 +17,8 @@ pub(crate) struct SelectProps {
     pub(crate) id: AttrValue,
     pub(crate) label: AttrValue,
     pub(crate) options: Rc<[SelectOption]>,
+    #[prop_or_default]
+    pub(crate) onchange: Option<Callback<Event>>,
 }
 
 #[function_component(Select)]
@@ -33,6 +37,7 @@ pub(crate) fn select(props: &SelectProps) -> Html {
             </label>
             <select
                 id={field_id}
+                onchange={props.onchange.clone()}
             >
             {
                 props.options.iter().map(|option| {
@@ -63,10 +68,15 @@ mod test {
         wasm_bindgen_test_configure,
     };
     use web_sys::{
+        Event,
         HtmlOptionElement,
         HtmlSelectElement,
     };
-    use yew::AttrValue;
+    use yew::{
+        AttrValue,
+        Callback,
+        TargetCast,
+    };
 
     use super::{
         Select,
@@ -91,7 +101,16 @@ mod test {
             id: AttrValue::from(id.to_owned()),
             label: AttrValue::from(""),
             options: Rc::new([]),
+            onchange: None,
         }
+    }
+
+    async fn dispatch_change_event(target: &HtmlSelectElement) {
+        let event = Event::new("change").expect("valid event");
+        target
+            .dispatch_event(&event)
+            .expect("event to be dispatched");
+        yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
     #[wasm_bindgen_test]
@@ -261,6 +280,41 @@ mod test {
         }
 
         assert_eq!(disabled_options, disabled);
+    }
+
+    #[wasm_bindgen_test]
+    async fn select_field_accepts_onchange_callback() {
+        let id = "test";
+        let options = vec!["First", "Second", "Third", "Fourth"];
+        let change_to = (2, "Third");
+        let mut props = select_props_with_id(id);
+        props.options = options
+            .iter()
+            .map(|v| SelectOption::from(*v).selected(*v == "Second"))
+            .collect();
+        props.onchange = Some(Callback::from(|e: Event| {
+            let value =
+                e.target_dyn_into::<HtmlSelectElement>().and_then(|select| {
+                    let index = select.selected_index();
+                    select
+                        .get(index as u32)
+                        .and_then(|selected| selected.get_attribute("value"))
+                });
+            if let Some(value) = value {
+                let test_div = DOM::get_test_div();
+                test_div.set_inner_html(&value);
+            }
+        }));
+        render_select(props).await;
+
+        let select =
+            DOM::get_html_select_by_id(&format!("{}_select_field", id))
+                .expect("Select to exist");
+        select.set_selected_index(change_to.0);
+        dispatch_change_event(&select).await;
+
+        let onchange_output = DOM::get_test_div().inner_html();
+        assert_eq!(onchange_output, change_to.1);
     }
 
     #[wasm_bindgen_test]

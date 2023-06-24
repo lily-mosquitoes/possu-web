@@ -10,6 +10,8 @@ mod dom {
     pub(crate) struct DOM;
 
     impl DOM {
+        const TEST_DIV_ID: &'static str = "test_div";
+
         pub(crate) fn document() -> Option<web_sys::Document> {
             web_sys::window()?.document()
         }
@@ -75,6 +77,24 @@ mod dom {
             }
 
             None
+        }
+
+        pub(crate) fn create_test_div() -> Option<&'static str> {
+            let output = Self::get_element_by_id("output")?;
+            let test_div = Self::document()?.create_element("div").ok()?;
+            test_div.set_id(Self::TEST_DIV_ID);
+            output.append_child(&test_div).ok()?;
+            Some(Self::TEST_DIV_ID)
+        }
+
+        pub(crate) fn get_test_div() -> web_sys::Element {
+            match Self::get_element_by_id(Self::TEST_DIV_ID) {
+                Some(element) => element,
+                None => {
+                    Self::create_test_div().expect("WEB_SYS failure");
+                    Self::get_element_by_id(Self::TEST_DIV_ID).unwrap()
+                },
+            }
         }
 
         pub(crate) fn get_computed_style(

@@ -11,6 +11,7 @@ use yew::{
 
 use crate::{
     components::{
+        DateTimeSelect,
         Input,
         MonetaryInput,
         Select,
@@ -37,8 +38,24 @@ pub fn new_entry() -> Html {
         });
     }
 
+    let date1 = chrono::Local::now() - chrono::Duration::days(300);
+    let date2 = chrono::Local::now() + chrono::Duration::days(500);
+    let range =
+        crate::types::datetime::DateTimeRange::<chrono::FixedOffset>::from(
+            date1.into(),
+            date2.into(),
+        );
+    let preselect: chrono::DateTime<chrono::FixedOffset> =
+        chrono::Local::now().into();
+
     html! {
         <section id={"new_entry"}>
+            <DateTimeSelect
+                id={"test"}
+                label={"dalkslds"}
+                datetime_range={Rc::new(range)}
+                preselect={Rc::new(preselect)}
+            />
             <Select
                 id={"category"}
                 label={"Category"}
