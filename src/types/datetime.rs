@@ -87,6 +87,14 @@ impl<T: TimeZone> DateTimeRange<T> {
         (self.start.year()..=self.end.year()).collect()
     }
 
+    pub(crate) fn get_year_or_last(&self, year: Option<Year>) -> Option<Year> {
+        let years = self.list_years();
+        match years.iter().find(|&&y| Some(y) == year) {
+            Some(&y) => Some(y),
+            None => years.last().cloned(),
+        }
+    }
+
     pub(crate) fn list_months_for_year(&self, year: Year) -> Vec<Month> {
         if self.list_years().contains(&year) != true {
             return Vec::new();
@@ -103,6 +111,19 @@ impl<T: TimeZone> DateTimeRange<T> {
                 (1..=self.end.month()).map(Month::from_u32).collect()
             },
             (false, false) => (1..=12).map(Month::from_u32).collect(),
+        }
+    }
+
+    pub(crate) fn get_month_or_last_for_year(
+        &self,
+        month: Option<Month>,
+        year: Option<Year>,
+    ) -> Option<Month> {
+        let year = year?;
+        let months = self.list_months_for_year(year);
+        match months.iter().find(|&&m| Some(m) == month) {
+            Some(&m) => Some(m),
+            None => months.last().cloned(),
         }
     }
 
@@ -133,6 +154,21 @@ impl<T: TimeZone> DateTimeRange<T> {
             (true, false) => (self.start.day()..=end_of_month()).collect(),
             (false, true) => (1..=self.end.day()).collect(),
             (false, false) => (1..=end_of_month()).collect(),
+        }
+    }
+
+    pub(crate) fn get_day_or_last_for_month_and_year(
+        &self,
+        day: Option<Day>,
+        month: Option<Month>,
+        year: Option<Year>,
+    ) -> Option<Day> {
+        let year = year?;
+        let month = month?;
+        let days = self.list_days_for_year_and_month(year, month);
+        match days.iter().find(|&&d| Some(d) == day) {
+            Some(&d) => Some(d),
+            None => days.last().cloned(),
         }
     }
 }
@@ -218,6 +254,37 @@ mod test {
     }
 
     #[wasm_bindgen_test]
+    fn datetime_get_year_or_last_returns_year_or_last_or_none() {
+        let tests = vec![
+            // incorrect date order
+            (make_date(2000, 1, 1), make_date(1999, 1, 1), Some(1999), None),
+            // year out of range gives last in list
+            (
+                make_date(1999, 1, 1),
+                make_date(2003, 1, 1),
+                Some(1800),
+                Some(2003),
+            ),
+            // year in range gives year
+            (
+                make_date(1999, 1, 1),
+                make_date(2003, 1, 1),
+                Some(2000),
+                Some(2000),
+            ),
+            // None gives last in list
+            (make_date(1999, 1, 1), make_date(2003, 1, 1), None, Some(2003)),
+        ];
+
+        for (date1, date2, test_year, expected_year) in tests {
+            let range = DateTimeRange::from(date1, date2);
+            let year = range.get_year_or_last(test_year);
+
+            assert_eq!(year, expected_year);
+        }
+    }
+
+    #[wasm_bindgen_test]
     fn datetimerange_list_months_for_year_lists_available_months_for_given_year(
     ) {
         let tests = vec![
@@ -246,6 +313,64 @@ mod test {
                 expected_months.map(Month::from_u32).collect();
 
             assert_eq!(months, expected_months);
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn datetime_get_month_or_last_for_year_returns_month_or_last_or_none() {
+        let tests = vec![
+            // incorrect date order
+            (
+                make_date(2000, 1, 1),
+                make_date(1999, 1, 1),
+                Some(1),
+                Some(1999),
+                None,
+            ),
+            // month out of range gives last in list
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 1),
+                Some(9),
+                Some(2000),
+                Some(6),
+            ),
+            // month in range gives month
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 1),
+                Some(3),
+                Some(2000),
+                Some(3),
+            ),
+            // month None gives last in list
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 1),
+                None,
+                Some(2000),
+                Some(6),
+            ),
+            // year out of range gives none
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 1),
+                Some(3),
+                Some(2001),
+                None,
+            ),
+            // year None gives None
+            (make_date(1999, 1, 1), make_date(2000, 6, 1), Some(3), None, None),
+        ];
+
+        for (date1, date2, test_month, test_year, expected_month) in tests {
+            let range = DateTimeRange::from(date1, date2);
+            let test_month = test_month.and_then(|m| Some(Month::from_u32(m)));
+            let month = range.get_month_or_last_for_year(test_month, test_year);
+            let expected_month =
+                expected_month.and_then(|m| Some(Month::from_u32(m)));
+
+            assert_eq!(month, expected_month);
         }
     }
 
@@ -280,6 +405,88 @@ mod test {
             let expected_days: Vec<u32> = expected_days.collect();
 
             assert_eq!(days, expected_days);
+        }
+    }
+
+    #[wasm_bindgen_test]
+    fn datetime_get_day_or_last_for_month_and_year_returns_day_or_last_or_none()
+    {
+        let tests = vec![
+            // incorrect date order
+            (
+                make_date(2000, 1, 1),
+                make_date(1999, 1, 1),
+                Some(1),
+                Some(1),
+                Some(1999),
+                None,
+            ),
+            // day out of range gives last in list
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 5),
+                Some(7),
+                Some(6),
+                Some(2000),
+                Some(5),
+            ),
+            // day in range gives day
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 5),
+                Some(3),
+                Some(6),
+                Some(2000),
+                Some(3),
+            ),
+            // day None gives last in list
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 9),
+                None,
+                Some(6),
+                Some(2000),
+                Some(9),
+            ),
+            // month out of range gives None
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 1),
+                Some(1),
+                Some(7),
+                Some(2000),
+                None,
+            ),
+            // year out of range gives none
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 1),
+                Some(1),
+                Some(6),
+                Some(2001),
+                None,
+            ),
+            // year None gives None
+            (
+                make_date(1999, 1, 1),
+                make_date(2000, 6, 1),
+                Some(1),
+                Some(6),
+                None,
+                None,
+            ),
+        ];
+
+        for (date1, date2, test_day, test_month, test_year, expected_day) in
+            tests
+        {
+            let range = DateTimeRange::from(date1, date2);
+            let test_month = test_month.and_then(|m| Some(Month::from_u32(m)));
+            let day = range.get_day_or_last_for_month_and_year(
+                test_day, test_month, test_year,
+            );
+
+            assert_eq!(day, expected_day);
         }
     }
 }
