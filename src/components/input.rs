@@ -56,20 +56,16 @@ pub(crate) struct InputProps {
 
 #[function_component(Input)]
 pub(crate) fn input(props: &InputProps) -> Html {
-    let input_id = format!("{}_input", props.id);
-    let input_label_id = format!("{}_input_label", props.id);
-    let input_field_id = format!("{}_input_field", props.id);
-
     html! {
-        <section id={input_id}>
+        <section id={format!("{}_section", props.id)}>
             <label
-                id={input_label_id}
-                for={input_field_id.clone()}
+                id={format!("{}_label", props.id)}
+                for={props.id.clone()}
             >
                 { props.label.clone() }
             </label>
             <input
-                id={input_field_id}
+                id={props.id.clone()}
                 type={props.input_type.to_string()}
                 inputmode={props.inputmode.to_string()}
                 placeholder={props.placeholder.clone()}
@@ -97,6 +93,7 @@ mod test {
     use yew::{
         AttrValue,
         Callback,
+        TargetCast,
     };
 
     use super::{
@@ -116,9 +113,9 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
-    fn input_props_with_id(id: &str) -> InputProps {
+    fn input_props_with_id(id_prefix: &str) -> InputProps {
         InputProps {
-            id: AttrValue::from(id.to_owned()),
+            id: AttrValue::from(id_prefix.to_owned()),
             label: AttrValue::from(""),
             input_type: InputType::Text,
             inputmode: InputMode::Text,
@@ -136,98 +133,52 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
-    fn example_callback_with_test_and_expected_value(
-    ) -> (Callback<InputEvent>, String, String) {
-        let callback = Callback::from(|e: InputEvent| {
-            let input = e
-                .target()
-                .expect("target to exist")
-                .dyn_into::<HtmlInputElement>()
-                .expect("input to exist");
-            let value = input.value();
-            let value: String =
-                value.chars().filter(|c| c.is_digit(10)).collect();
-            input.set_value(&value);
-        });
-
-        let test_input_value = "nj8672ndja982n".to_string();
-
-        let expected_value = "8672982".to_string();
-
-        (callback, test_input_value, expected_value)
-    }
+    static TEST_ID: &str = "test_input";
 
     #[wasm_bindgen_test]
-    async fn input_is_section_with_expected_id() {
-        let id = "test";
-        let props = input_props_with_id(id);
+    async fn component_contains_input_element_with_expected_id() {
+        let props = input_props_with_id(TEST_ID);
         render_input(props).await;
 
-        let element = DOM::get_section_by_id(&format!("{}_input", id));
+        let element = DOM::get_input_by_id(TEST_ID);
 
         assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn input_contains_field_with_expected_id() {
-        let id = "test";
-        let props = input_props_with_id(id);
+    async fn input_element_is_inside_section() {
+        let props = input_props_with_id(TEST_ID);
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id));
-
-        assert!(element.is_some());
-    }
-
-    #[wasm_bindgen_test]
-    async fn input_field_is_inside_input_section() {
-        let id = "test";
-        let props = input_props_with_id(id);
-        render_input(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
         let parent = element.parent_element().expect("Parent Element to exist");
 
-        assert_eq!(parent.id(), format!("{}_input", id));
+        assert_eq!(parent.id(), format!("{}_section", TEST_ID));
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_is_input() {
-        let id = "test";
-        let props = input_props_with_id(id);
-        render_input(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
-
-        assert_eq!(element.tag_name().as_str(), "INPUT");
-    }
-
-    #[wasm_bindgen_test]
-    async fn input_field_has_type_of_input_type() {
-        let id = "test";
+    async fn input_element_has_given_input_type() {
         let input_type = InputType::Password;
-        let mut props = input_props_with_id(id);
+        let mut props = input_props_with_id(TEST_ID);
         props.input_type = input_type;
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
 
         assert_eq!(element.get_attribute("type"), Some(input_type.to_string()));
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_has_inputmode_of_inputmode() {
-        let id = "test";
+    async fn input_element_has_given_inputmode() {
         let inputmode = InputMode::Numeric;
-        let mut props = input_props_with_id(id);
+        let mut props = input_props_with_id(TEST_ID);
         props.inputmode = inputmode;
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
 
         assert_eq!(
             element.get_attribute("inputmode"),
@@ -236,28 +187,26 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_does_not_have_placeholder_when_not_given() {
-        let id = "test";
-        let mut props = input_props_with_id(id);
+    async fn input_element_does_not_have_placeholder_when_not_given() {
+        let mut props = input_props_with_id(TEST_ID);
         props.placeholder = None;
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
 
         assert_eq!(element.get_attribute("placeholder"), None);
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_has_placeholder_when_given() {
-        let id = "test";
+    async fn input_element_has_placeholder_when_given() {
         let placeholder = "this is a placeholder";
-        let mut props = input_props_with_id(id);
+        let mut props = input_props_with_id(TEST_ID);
         props.placeholder = Some(AttrValue::from(placeholder));
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
 
         assert_eq!(
             element.get_attribute("placeholder"),
@@ -266,140 +215,117 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_does_not_have_value_when_not_given() {
-        let id = "test";
-        let mut props = input_props_with_id(id);
+    async fn input_element_does_not_have_value_when_not_given() {
+        let mut props = input_props_with_id(TEST_ID);
         props.value = None;
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
-        let input = element
+        let element = DOM::get_input_by_id(TEST_ID)
+            .expect("Input Element to exist")
             .dyn_into::<HtmlInputElement>()
             .expect("Element to be Input");
 
-        assert_eq!(input.value(), "");
+        assert_eq!(element.value(), "");
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_has_value_when_given() {
-        let id = "test";
+    async fn input_element_has_value_when_given() {
         let value = "this is a value";
-        let mut props = input_props_with_id(id);
+        let mut props = input_props_with_id(TEST_ID);
         props.value = Some(AttrValue::from(value));
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
-        let input = element
+        let element = DOM::get_input_by_id(TEST_ID)
+            .expect("Input Element to exist")
             .dyn_into::<HtmlInputElement>()
             .expect("Element to be Input");
 
-        assert_eq!(input.value(), value);
+        assert_eq!(element.value(), value);
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_does_not_have_oninput_when_not_given() {
-        let id = "test";
-        let test_input_and_expected_value = "saw234kldfs778";
-        let mut props = input_props_with_id(id);
-        props.oninput = None;
-        render_input(props).await;
+    async fn component_executes_given_oninput() {
+        let filter_digits_function = |s: &str| -> String {
+            s.chars().filter(|c| c.is_digit(10)).collect()
+        };
+        let filter_digits = Callback::from(move |e: InputEvent| {
+            if let Some(element) = e.target_dyn_into::<HtmlInputElement>() {
+                let value = filter_digits_function(&element.value());
+                element.set_value(&value);
+            };
+        });
+        let substitute_by_hello = Callback::from(|e: InputEvent| {
+            if let Some(element) = e.target_dyn_into::<HtmlInputElement>() {
+                element.set_value("hello");
+            };
+        });
+        let nothing = Callback::from(|_| {});
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
-        let input = element
-            .dyn_into::<HtmlInputElement>()
-            .expect("Element to be Input");
+        let test_inputs = vec!["djs3a564ld92l", "1234", "odkxa", ""];
+        let test_callbacks = vec![
+            (0, Some(filter_digits)),
+            (1, Some(substitute_by_hello)),
+            (2, Some(nothing)),
+            (3, None),
+        ];
+        let expected_output = |&index, input| -> String {
+            match (index, input) {
+                (0, input) => filter_digits_function(input),
+                (1, _) => String::from("hello"),
+                (_, input) => input.to_string(),
+            }
+        };
 
-        input.set_value(test_input_and_expected_value);
-        dispatch_input_event(&input).await;
+        for input in test_inputs {
+            for (index, callback) in &test_callbacks {
+                let mut props = input_props_with_id(TEST_ID);
+                props.oninput = callback.clone();
+                render_input(props).await;
 
-        assert_eq!(input.value(), test_input_and_expected_value);
+                let element = DOM::get_input_by_id(TEST_ID)
+                    .expect("Element to exist")
+                    .dyn_into::<HtmlInputElement>()
+                    .expect("Element to be Input");
+
+                element.set_value(&input);
+                dispatch_input_event(&element).await;
+
+                assert_eq!(element.value(), expected_output(index, input));
+            }
+        }
     }
 
     #[wasm_bindgen_test]
-    async fn input_field_has_oninput_when_given() {
-        let id = "test";
-        let (callback, test_input_value, expected_value) =
-            example_callback_with_test_and_expected_value();
-        let mut props = input_props_with_id(id);
-        props.oninput = Some(callback);
+    async fn component_contains_label_element_for_input() {
+        let props = input_props_with_id(TEST_ID);
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_field", id))
-            .expect("Element to exist");
-        let input = element
-            .dyn_into::<HtmlInputElement>()
-            .expect("Element to be Input");
-
-        input.set_value(&test_input_value);
-        dispatch_input_event(&input).await;
-
-        assert_eq!(input.value(), expected_value);
-    }
-
-    #[wasm_bindgen_test]
-    async fn input_contains_label_with_expected_id() {
-        let id = "test";
-        let props = input_props_with_id(id);
-        render_input(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_input_label", id));
+        let element = DOM::get_label_by_for(TEST_ID);
 
         assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn input_label_is_inside_input_section() {
-        let id = "test";
-        let props = input_props_with_id(id);
+    async fn label_element_is_inside_section() {
+        let props = input_props_with_id(TEST_ID);
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_label", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_label_by_for(TEST_ID).expect("Label Element to exist");
         let parent = element.parent_element().expect("Parent Element to exist");
 
-        assert_eq!(parent.id(), format!("{}_input", id));
+        assert_eq!(parent.id(), format!("{}_section", TEST_ID));
     }
 
     #[wasm_bindgen_test]
-    async fn input_label_is_label() {
-        let id = "test";
-        let props = input_props_with_id(id);
-        render_input(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_input_label", id))
-            .expect("Element to exist");
-
-        assert_eq!(element.tag_name().as_str(), "LABEL");
-    }
-
-    #[wasm_bindgen_test]
-    async fn input_label_has_for_with_input_field_id() {
-        let id = "test";
-        let props = input_props_with_id(id);
-        render_input(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_input_label", id))
-            .expect("Element to exist");
-
-        assert_eq!(
-            element.get_attribute("for"),
-            Some(format!("{}_input_field", id))
-        );
-    }
-
-    #[wasm_bindgen_test]
-    async fn input_label_has_inner_html_with_label_text() {
-        let id = "test";
+    async fn label_element_has_inner_html_given_by_label_prop() {
         let label = "test label text";
-        let mut props = input_props_with_id(id);
+        let mut props = input_props_with_id(TEST_ID);
         props.label = AttrValue::from(label);
         render_input(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_input_label", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_label_by_for(TEST_ID).expect("Label Element to exist");
 
         assert_eq!(&element.inner_html(), label);
     }

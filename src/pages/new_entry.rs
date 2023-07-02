@@ -47,11 +47,11 @@ pub fn new_entry() -> Html {
                 options={Rc::from((*categories).clone())}
             />
             <Input
-                id={"description"}
+                id={"description_input"}
                 label={"Description"}
             />
             <MonetaryInput
-                id={"value"}
+                id={"value_input"}
                 label={"Value"}
             />
         </section>
@@ -92,6 +92,9 @@ mod test {
             .expect("Event to be dispatched");
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
+
+    static DESCRIPTION_INPUT_ID: &str = "description_input";
+    static VALUE_INPUT_ID: &str = "value_input";
 
     // DATETIME INPUT TESTS
     // REPEAT INPUT TESTS
@@ -156,125 +159,153 @@ mod test {
 
     // DESCRIPTION INPUT TESTS
     #[wasm_bindgen_test]
-    async fn description_input_field_with_label_exists() {
+    async fn page_contains_description_input_element() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("description_input_field");
-        let label = DOM::get_label_by_for("description_input_field");
+        let element = DOM::get_input_by_id(DESCRIPTION_INPUT_ID);
 
-        assert!(field.is_some() && label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn description_input_field_and_label_are_visible() {
+    async fn description_input_element_is_visible() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("description_input_field")
-            .expect("description input field to exist");
-        let label = DOM::get_label_by_for("description_input_field")
-            .expect("description input field label to exist");
+        let element = DOM::get_input_by_id(DESCRIPTION_INPUT_ID)
+            .expect("Input Element to exist");
 
-        assert!(
-            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
-        );
+        assert!(DOM::is_element_visible(&element));
     }
 
     #[wasm_bindgen_test]
-    async fn description_input_field_label_has_expected_inner_html() {
+    async fn page_contains_label_for_description_input_element() {
         render_new_entry().await;
 
-        let label = DOM::get_label_by_for("description_input_field")
-            .expect("description input field label to exist");
+        let element = DOM::get_label_by_for(DESCRIPTION_INPUT_ID);
 
-        assert_eq!(&label.inner_html(), "Description");
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn description_input_field_type_is_text() {
+    async fn description_input_label_element_is_visible() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("description_input_field")
-            .expect("description input field to exist");
-        let input_type = field.get_attribute("type");
+        let element = DOM::get_label_by_for(DESCRIPTION_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert!(DOM::is_element_visible(&element));
+    }
+
+    #[wasm_bindgen_test]
+    async fn description_input_label_element_has_expected_inner_html() {
+        render_new_entry().await;
+
+        let element = DOM::get_label_by_for(DESCRIPTION_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert_eq!(&element.inner_html(), "Description");
+    }
+
+    #[wasm_bindgen_test]
+    async fn description_input_element_type_is_text() {
+        render_new_entry().await;
+
+        let element = DOM::get_input_by_id(DESCRIPTION_INPUT_ID)
+            .expect("Input Element to exist");
+        let input_type = element.get_attribute("type");
 
         assert_eq!(input_type, Some("text".to_string()));
     }
 
     // VALUE INPUT TESTS
     #[wasm_bindgen_test]
-    async fn value_input_field_with_label_exists() {
+    async fn page_contains_value_input_element() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("value_input_field");
-        let label = DOM::get_label_by_for("value_input_field");
+        let element = DOM::get_input_by_id(VALUE_INPUT_ID);
 
-        assert!(field.is_some() && label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn value_input_field_and_label_are_visible() {
+    async fn value_input_element_is_visible() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("value_input_field")
-            .expect("value input field to exist");
-        let label = DOM::get_label_by_for("value_input_field")
-            .expect("value input field label to exist");
+        let element = DOM::get_input_by_id(VALUE_INPUT_ID)
+            .expect("Input Element to exist");
 
-        assert!(
-            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
-        );
+        assert!(DOM::is_element_visible(&element));
     }
 
     #[wasm_bindgen_test]
-    async fn value_input_field_label_has_expected_inner_html() {
+    async fn page_contains_label_for_value_input_element() {
         render_new_entry().await;
 
-        let label = DOM::get_label_by_for("value_input_field")
-            .expect("value input field label to exist");
+        let element = DOM::get_label_by_for(VALUE_INPUT_ID);
 
-        assert_eq!(&label.inner_html(), "Value");
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn value_input_field_type_is_text() {
+    async fn value_input_label_element_is_visible() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("value_input_field")
-            .expect("value input field to exist");
-        let input_type = field.get_attribute("type");
+        let element = DOM::get_label_by_for(VALUE_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert!(DOM::is_element_visible(&element));
+    }
+
+    #[wasm_bindgen_test]
+    async fn value_input_label_element_has_expected_inner_html() {
+        render_new_entry().await;
+
+        let element = DOM::get_label_by_for(VALUE_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert_eq!(&element.inner_html(), "Value");
+    }
+
+    #[wasm_bindgen_test]
+    async fn value_input_element_type_is_text() {
+        render_new_entry().await;
+
+        let element = DOM::get_input_by_id(VALUE_INPUT_ID)
+            .expect("Input Element to exist");
+        let input_type = element.get_attribute("type");
 
         assert_eq!(input_type, Some("text".to_string()));
     }
 
     #[wasm_bindgen_test]
-    async fn value_input_field_inputmode_is_numeric() {
+    async fn value_input_element_inputmode_is_numeric() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("value_input_field")
-            .expect("value input field to exist");
-        let input_type = field.get_attribute("inputmode");
+        let element = DOM::get_input_by_id(VALUE_INPUT_ID)
+            .expect("Input Element to exist");
+        let input_mode = element.get_attribute("inputmode");
 
-        assert_eq!(input_type, Some("numeric".to_string()));
+        assert_eq!(input_mode, Some("numeric".to_string()));
     }
 
     #[wasm_bindgen_test]
-    async fn value_input_field_placeholder_has_expected_string() {
+    async fn value_input_element_placeholder_is_string_representing_monetary_zero(
+    ) {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("value_input_field")
-            .expect("value input field to exist");
-        let input_type = field.get_attribute("placeholder");
+        let element = DOM::get_input_by_id(VALUE_INPUT_ID)
+            .expect("Input Element to exist");
+        let placeholder = element.get_attribute("placeholder");
 
-        assert_eq!(input_type, Some("0.00".to_string()));
+        assert_eq!(placeholder, Some("0.00".to_string()));
     }
 
     #[wasm_bindgen_test]
-    async fn value_input_field_value_is_formatted_on_input() {
+    async fn value_input_element_value_is_formatted_on_input() {
         render_new_entry().await;
 
-        let field = DOM::get_input_by_id("value_input_field")
-            .expect("value input field to exist");
-        let input = field
+        let element = DOM::get_input_by_id(VALUE_INPUT_ID)
+            .expect("Input Element to exist")
             .dyn_into::<HtmlInputElement>()
             .expect("Element to be Input");
 
@@ -296,10 +327,10 @@ mod test {
         ];
 
         for case in tests {
-            input.set_value(case.0);
-            dispatch_input_event(&input).await;
+            element.set_value(case.0);
+            dispatch_input_event(&element).await;
 
-            assert_eq!(input.value(), case.1);
+            assert_eq!(element.value(), case.1);
         }
     }
 }

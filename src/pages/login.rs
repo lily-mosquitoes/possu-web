@@ -12,13 +12,13 @@ use crate::components::{
 #[function_component(Login)]
 pub fn login() -> Html {
     html! {
-        <section id={"login"}>
+        <section id={"login_section"}>
             <Input
-                id={"username"}
+                id={"username_input"}
                 label={"Username"}
             />
             <Input
-                id={"password"}
+                id={"password_input"}
                 label={"Password"}
                 input_type={InputType::Password}
             />
@@ -53,136 +53,168 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
+    static USERNAME_INPUT_ID: &str = "username_input";
+    static PASSWORD_INPUT_ID: &str = "password_input";
+    static LOGIN_BUTTON_ID: &str = "login_button";
+
     // USERNAME INPUT TESTS
     #[wasm_bindgen_test]
-    async fn username_input_field_with_label_exists() {
+    async fn page_contains_username_input_element() {
         render_login().await;
 
-        let field = DOM::get_input_by_id("username_input_field");
-        let label = DOM::get_label_by_for("username_input_field");
+        let element = DOM::get_input_by_id(USERNAME_INPUT_ID);
 
-        assert!(field.is_some() && label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn username_input_field_and_label_are_visible() {
+    async fn username_input_element_is_visible() {
         render_login().await;
 
-        let field = DOM::get_input_by_id("username_input_field")
-            .expect("username input field to exist");
-        let label = DOM::get_label_by_for("username_input_field")
-            .expect("username input field label to exist");
+        let element = DOM::get_input_by_id(USERNAME_INPUT_ID)
+            .expect("Input Element to exist");
 
-        assert!(
-            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
-        );
+        assert!(DOM::is_element_visible(&element));
     }
 
     #[wasm_bindgen_test]
-    async fn username_input_field_label_has_expected_inner_html() {
+    async fn page_contains_label_for_username_input_element() {
         render_login().await;
 
-        let label = DOM::get_label_by_for("username_input_field")
-            .expect("username input field label to exist");
+        let element = DOM::get_label_by_for(USERNAME_INPUT_ID);
 
-        assert_eq!(&label.inner_html(), "Username");
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn username_input_field_type_is_text() {
+    async fn username_input_label_element_is_visible() {
         render_login().await;
 
-        let field = DOM::get_input_by_id("username_input_field")
-            .expect("username input field to exist");
-        let input_type = field.get_attribute("type");
+        let element = DOM::get_label_by_for(USERNAME_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert!(DOM::is_element_visible(&element));
+    }
+
+    #[wasm_bindgen_test]
+    async fn username_input_label_element_has_expected_inner_html() {
+        render_login().await;
+
+        let element = DOM::get_label_by_for(USERNAME_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert_eq!(&element.inner_html(), "Username");
+    }
+
+    #[wasm_bindgen_test]
+    async fn username_input_element_type_is_text() {
+        render_login().await;
+
+        let element = DOM::get_input_by_id(USERNAME_INPUT_ID)
+            .expect("Input Element to exist");
+        let input_type = element.get_attribute("type");
 
         assert_eq!(input_type, Some("text".to_string()));
     }
 
     // PASSWORD INPUT TESTS
     #[wasm_bindgen_test]
-    async fn password_input_field_with_label_exists() {
+    async fn page_contains_password_input_element() {
         render_login().await;
 
-        let field = DOM::get_input_by_id("password_input_field");
-        let label = DOM::get_label_by_for("password_input_field");
+        let element = DOM::get_input_by_id(PASSWORD_INPUT_ID);
 
-        assert!(field.is_some() && label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn password_input_field_and_label_are_visible() {
+    async fn password_input_element_is_visible() {
         render_login().await;
 
-        let field = DOM::get_input_by_id("password_input_field")
-            .expect("password input field to exist");
-        let label = DOM::get_label_by_for("password_input_field")
-            .expect("password input field label to exist");
+        let element = DOM::get_input_by_id(PASSWORD_INPUT_ID)
+            .expect("Input Element to exist");
 
-        assert!(
-            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
-        );
+        assert!(DOM::is_element_visible(&element));
     }
 
     #[wasm_bindgen_test]
-    async fn password_input_field_label_has_expected_inner_html() {
+    async fn page_contains_label_for_password_input_element() {
         render_login().await;
 
-        let label = DOM::get_label_by_for("password_input_field")
-            .expect("username input field label to exist");
+        let element = DOM::get_label_by_for(PASSWORD_INPUT_ID);
 
-        assert_eq!(&label.inner_html(), "Password");
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn password_input_field_type_is_password() {
+    async fn password_input_label_element_is_visible() {
         render_login().await;
 
-        let field = DOM::get_input_by_id("password_input_field")
-            .expect("password input field to exist");
-        let input_type = field.get_attribute("type");
+        let element = DOM::get_label_by_for(PASSWORD_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert!(DOM::is_element_visible(&element));
+    }
+
+    #[wasm_bindgen_test]
+    async fn password_input_label_element_has_expected_inner_html() {
+        render_login().await;
+
+        let element = DOM::get_label_by_for(PASSWORD_INPUT_ID)
+            .expect("Label Element to exist");
+
+        assert_eq!(&element.inner_html(), "Password");
+    }
+
+    #[wasm_bindgen_test]
+    async fn password_input_element_type_is_password() {
+        render_login().await;
+
+        let element = DOM::get_input_by_id(PASSWORD_INPUT_ID)
+            .expect("Input Element to exist");
+        let input_type = element.get_attribute("type");
 
         assert_eq!(input_type, Some("password".to_string()));
     }
 
     // LOGIN BUTTON TESTS
     #[wasm_bindgen_test]
-    async fn login_button_exists() {
+    async fn page_contains_login_button_element() {
         render_login().await;
 
-        let button = DOM::get_button_by_id("login_button");
+        let button = DOM::get_button_by_id(LOGIN_BUTTON_ID);
 
         assert!(button.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn login_button_is_visible() {
+    async fn login_button_element_is_visible() {
         render_login().await;
 
-        let button = DOM::get_button_by_id("login_button")
-            .expect("login button to exist");
+        let button = DOM::get_button_by_id(LOGIN_BUTTON_ID)
+            .expect("Button Element to exist");
 
         assert!(DOM::is_element_visible(&button));
     }
 
     #[wasm_bindgen_test]
-    async fn login_button_type_is_submit() {
+    async fn login_button_element_has_expected_inner_html() {
         render_login().await;
 
-        let button = DOM::get_button_by_id("login_button")
-            .expect("login button to exist");
-        let button_type = button.get_attribute("type");
+        let button = DOM::get_button_by_id(LOGIN_BUTTON_ID)
+            .expect("Button Element to exist");
 
-        assert_eq!(button_type, Some("submit".to_string()));
+        assert_eq!(&button.inner_html(), "Login");
     }
 
     #[wasm_bindgen_test]
-    async fn login_button_has_expected_inner_html() {
+    async fn login_button_element_type_is_submit() {
         render_login().await;
 
-        let button = DOM::get_button_by_id("login_button")
-            .expect("login button to exist");
+        let button = DOM::get_button_by_id(LOGIN_BUTTON_ID)
+            .expect("Button Element to exist");
+        let button_type = button.get_attribute("type");
 
-        assert_eq!(&button.inner_html(), "Login");
+        assert_eq!(button_type, Some("submit".to_string()));
     }
 }

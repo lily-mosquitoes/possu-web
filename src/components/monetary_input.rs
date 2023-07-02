@@ -32,9 +32,9 @@ pub(crate) fn monetary_input(props: &MonetaryInputProps) -> Html {
         let input_value = input_value.clone();
 
         Callback::from(move |e: InputEvent| {
-            let target = e.target();
-            let input =
-                target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+            let input = e
+                .target()
+                .and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
             if let Some(input) = input {
                 let new_value =
                     convert_digit_string_to_monetary(&input.value());
@@ -148,6 +148,8 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
+    static TEST_ID: &str = "test_monetary_input";
+
     #[wasm_bindgen_test]
     fn filter_digits_works() {
         let tests = vec![
@@ -191,6 +193,7 @@ mod test {
             ("123", "123"),
             ("1234", "1,234"),
             ("12345", "12,345"),
+            ("dkasmdsakjsdkjas", "d,kas,mds,akj,sdk,jas"),
             ("999999999999999999999999", "999,999,999,999,999,999,999,999"),
             ("9999999999999999999999999", "9,999,999,999,999,999,999,999,999"),
         ];
@@ -203,10 +206,10 @@ mod test {
     #[wasm_bindgen_test]
     fn convert_digit_string_to_monetary_works() {
         let tests = vec![
+            ("", "0.00"),
             ("-", "0.00"),
             ("jdsjakhsd", "0.00"),
             ("¾", "0.00"),
-            ("", "0.00"),
             ("0", "0.00"),
             ("1", "0.01"),
             ("12", "0.12"),
@@ -231,97 +234,101 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn monetary_input_field_with_label_exists() {
-        let id = "test";
+    async fn component_contains_input_element() {
         let props = MonetaryInputProps {
-            id: AttrValue::from(id),
+            id: AttrValue::from(TEST_ID),
             label: AttrValue::from("Test"),
         };
         render_monetary_input(props).await;
 
-        let field = DOM::get_input_by_id(&format!("{}_input_field", id));
-        let label = DOM::get_label_by_for(&format!("{}_input_field", id));
+        let element = DOM::get_input_by_id(TEST_ID);
 
-        assert!(field.is_some() && label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn monetary_input_field_label_has_expected_inner_html() {
-        let id = "test";
+    async fn component_contains_label_element_for_input() {
+        let props = MonetaryInputProps {
+            id: AttrValue::from(TEST_ID),
+            label: AttrValue::from("Test"),
+        };
+        render_monetary_input(props).await;
+
+        let element = DOM::get_label_by_for(TEST_ID);
+
+        assert!(element.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn label_element_has_inner_html_given_by_label_prop() {
         let label = "Test";
         let props = MonetaryInputProps {
-            id: AttrValue::from(id),
+            id: AttrValue::from(TEST_ID),
             label: AttrValue::from(label),
         };
         render_monetary_input(props).await;
 
-        let label_element =
-            DOM::get_label_by_for(&format!("{}_input_field", id))
-                .expect("monetary input field label to exist");
+        let element =
+            DOM::get_label_by_for(TEST_ID).expect("Label Element to exist");
 
-        assert_eq!(&label_element.inner_html(), label);
+        assert_eq!(&element.inner_html(), label);
     }
 
     #[wasm_bindgen_test]
-    async fn monetary_input_field_type_is_text() {
-        let id = "test";
+    async fn input_element_type_is_text() {
         let props = MonetaryInputProps {
-            id: AttrValue::from(id),
+            id: AttrValue::from(TEST_ID),
             label: AttrValue::from("Test"),
         };
         render_monetary_input(props).await;
 
-        let field = DOM::get_input_by_id(&format!("{}_input_field", id))
-            .expect("monetary input field to exist");
-        let input_type = field.get_attribute("type");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
+        let input_type = element.get_attribute("type");
 
         assert_eq!(input_type, Some("text".to_string()));
     }
 
     #[wasm_bindgen_test]
-    async fn monetary_input_field_inputmode_is_numeric() {
-        let id = "test";
+    async fn input_element_inputmode_is_numeric() {
         let props = MonetaryInputProps {
-            id: AttrValue::from(id),
+            id: AttrValue::from(TEST_ID),
             label: AttrValue::from("Test"),
         };
         render_monetary_input(props).await;
 
-        let field = DOM::get_input_by_id(&format!("{}_input_field", id))
-            .expect("monetary input field to exist");
-        let input_type = field.get_attribute("inputmode");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
+        let input_mode = element.get_attribute("inputmode");
 
-        assert_eq!(input_type, Some("numeric".to_string()));
+        assert_eq!(input_mode, Some("numeric".to_string()));
     }
 
     #[wasm_bindgen_test]
-    async fn monetary_input_field_placeholder_has_expected_string() {
-        let id = "test";
+    async fn input_element_placeholder_is_string_representing_monetary_zero() {
         let props = MonetaryInputProps {
-            id: AttrValue::from(id),
+            id: AttrValue::from(TEST_ID),
             label: AttrValue::from("Test"),
         };
         render_monetary_input(props).await;
 
-        let field = DOM::get_input_by_id(&format!("{}_input_field", id))
-            .expect("monetary input field to exist");
-        let input_type = field.get_attribute("placeholder");
+        let element =
+            DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
+        let placeholder = element.get_attribute("placeholder");
 
-        assert_eq!(input_type, Some("0.00".to_string()));
+        assert_eq!(placeholder, Some("0.00".to_string()));
     }
 
     #[wasm_bindgen_test]
-    async fn monetary_input_field_value_is_formatted_on_input_event() {
-        let id = "test";
+    async fn input_element_value_is_formatted_on_input_event() {
         let props = MonetaryInputProps {
-            id: AttrValue::from(id),
+            id: AttrValue::from(TEST_ID),
             label: AttrValue::from("Test"),
         };
         render_monetary_input(props).await;
 
-        let field = DOM::get_input_by_id(&format!("{}_input_field", id))
-            .expect("value input field to exist");
-        let input = field
+        let element = DOM::get_input_by_id(TEST_ID)
+            .expect("Input Element to exist")
             .dyn_into::<HtmlInputElement>()
             .expect("Element to be Input");
 
@@ -343,10 +350,10 @@ mod test {
         ];
 
         for case in tests {
-            input.set_value(case.0);
-            dispatch_input_event(&input).await;
+            element.set_value(case.0);
+            dispatch_input_event(&element).await;
 
-            assert_eq!(input.value(), case.1);
+            assert_eq!(element.value(), case.1);
         }
     }
 }
