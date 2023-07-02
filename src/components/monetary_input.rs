@@ -55,11 +55,18 @@ pub(crate) fn monetary_input(props: &MonetaryInputProps) -> Html {
     }
 }
 
-fn filter_digits(string: &str) -> String {
-    string
-        .chars()
-        .filter(|c| c.is_digit(10))
-        .collect::<String>()
+fn convert_digit_string_to_monetary(string: &str) -> String {
+    let string = truncate_to_valid_i64(string);
+
+    match string.len() {
+        0 => String::from("0.00"),
+        1 => format!("0.0{}", string),
+        2 => format!("0.{}", string),
+        n => {
+            let (a, b) = string.split_at(n - 2);
+            format!("{}.{}", add_thousands_separator(a), b)
+        },
+    }
 }
 
 fn truncate_to_valid_i64(string: &str) -> String {
@@ -75,6 +82,13 @@ fn truncate_to_valid_i64(string: &str) -> String {
     string
 }
 
+fn filter_digits(string: &str) -> String {
+    string
+        .chars()
+        .filter(|c| c.is_digit(10))
+        .collect::<String>()
+}
+
 fn add_thousands_separator(string: &str) -> String {
     match string.len() {
         n if n <= 3 => string.to_string(),
@@ -87,20 +101,6 @@ fn add_thousands_separator(string: &str) -> String {
             let a = add_thousands_separator(a);
             let b = add_thousands_separator(b);
             format!("{},{}", a, b)
-        },
-    }
-}
-
-fn convert_digit_string_to_monetary(string: &str) -> String {
-    let string = truncate_to_valid_i64(string);
-
-    match string.len() {
-        0 => String::from("0.00"),
-        1 => format!("0.0{}", string),
-        2 => format!("0.{}", string),
-        n => {
-            let (a, b) = string.split_at(n - 2);
-            format!("{}.{}", add_thousands_separator(a), b)
         },
     }
 }

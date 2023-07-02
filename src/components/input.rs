@@ -8,36 +8,6 @@ use yew::{
     Properties,
 };
 
-#[derive(Clone, Copy, PartialEq)]
-pub(crate) enum InputType {
-    Text,
-    Password,
-}
-
-impl std::fmt::Display for InputType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Text => write!(f, "text"),
-            Self::Password => write!(f, "password"),
-        }
-    }
-}
-
-#[derive(Clone, Copy, PartialEq)]
-pub(crate) enum InputMode {
-    Text,
-    Numeric,
-}
-
-impl std::fmt::Display for InputMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Text => write!(f, "text"),
-            Self::Numeric => write!(f, "numeric"),
-        }
-    }
-}
-
 #[derive(Properties, PartialEq)]
 pub(crate) struct InputProps {
     pub(crate) id: AttrValue,
@@ -73,6 +43,36 @@ pub(crate) fn input(props: &InputProps) -> Html {
                 oninput={props.oninput.clone()}
             />
         </section>
+    }
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub(crate) enum InputType {
+    Text,
+    Password,
+}
+
+impl std::fmt::Display for InputType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Text => write!(f, "text"),
+            Self::Password => write!(f, "password"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub(crate) enum InputMode {
+    Text,
+    Numeric,
+}
+
+impl std::fmt::Display for InputMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Text => write!(f, "text"),
+            Self::Numeric => write!(f, "numeric"),
+        }
     }
 }
 
