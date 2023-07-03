@@ -23,30 +23,27 @@ pub(crate) struct SelectProps {
 
 #[function_component(Select)]
 pub(crate) fn select(props: &SelectProps) -> Html {
-    let section_id = format!("{}_select", props.id);
-    let label_id = format!("{}_select_label", props.id);
-    let field_id = format!("{}_select_field", props.id);
-
     html! {
-        <section id={section_id}>
+        <section id={format!("{}_section", props.id)}>
             <label
-                id={label_id}
-                for={field_id.clone()}
+                id={format!("{}_label", props.id)}
+                for={props.id.clone()}
             >
                 { props.label.clone() }
             </label>
             <select
-                id={field_id}
+                id={props.id.clone()}
                 onchange={props.onchange.clone()}
             >
             {
                 props.options.iter().map(|option| {
                     let key = option.value.as_str();
                     let value = &option.value;
+                    let inner_html = &option.inner_html;
                     let selected = option.selected;
                     let disabled = option.disabled;
                     html! {
-                        <option {key} {value} {selected} {disabled}>{value}</option>
+                        <option {key} {value} {selected} {disabled}>{inner_html}</option>
                     }
                 }).collect::<Html>()
             }
@@ -113,111 +110,96 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
+    static TEST_ID: &str = "test_select";
+
     #[wasm_bindgen_test]
-    async fn select_is_section_with_expected_id() {
-        let id = "test";
-        let props = select_props_with_id(id);
+    async fn component_contains_select_element_with_expected_id() {
+        let props = select_props_with_id(TEST_ID);
         render_select(props).await;
 
-        let element = DOM::get_section_by_id(&format!("{}_select", id));
+        let element = DOM::get_select_by_id(TEST_ID);
 
         assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn select_contains_field_with_expected_id() {
-        let id = "test";
-        let props = select_props_with_id(id);
+    async fn select_element_is_inside_section() {
+        let props = select_props_with_id(TEST_ID);
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_field", id));
-
-        assert!(element.is_some());
-    }
-
-    #[wasm_bindgen_test]
-    async fn select_field_is_inside_select_section() {
-        let id = "test";
-        let props = select_props_with_id(id);
-        render_select(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_select_field", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_select_by_id(TEST_ID).expect("Select Element to exist");
         let parent = element.parent_element().expect("Parent Element to exist");
 
-        assert_eq!(parent.id(), format!("{}_select", id));
+        assert_eq!(parent.tag_name(), "SECTION");
     }
 
     #[wasm_bindgen_test]
-    async fn select_field_is_select() {
-        let id = "test";
-        let props = select_props_with_id(id);
+    async fn select_element_has_given_options_values() {
+        let values = vec!["First", "Second", "Third"];
+        let options: Rc<[SelectOption]> = values
+            .iter()
+            .map(|&value| SelectOption {
+                value: AttrValue::from(value),
+                inner_html: AttrValue::from(format!("text-{}", value)),
+                ..Default::default()
+            })
+            .collect();
+        let mut props = select_props_with_id(TEST_ID);
+        props.options = options;
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_field", id))
-            .expect("Element to exist");
-
-        assert_eq!(element.tag_name().as_str(), "SELECT");
-    }
-
-    #[wasm_bindgen_test]
-    async fn select_field_has_options_with_value_of_options() {
-        let id = "test";
-        let options = vec!["First", "Second", "Third"];
-        let mut props = select_props_with_id(id);
-        props.options =
-            options.iter().map(|s| SelectOption::from(*s)).collect();
-        render_select(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_select_field", id))
-            .expect("Element to exist");
-        let select = element
+        let element = DOM::get_select_by_id(TEST_ID)
+            .expect("Select Element to exist")
             .dyn_into::<HtmlSelectElement>()
             .expect("Element to be Select");
 
         let mut select_options_values = vec![];
-        for index in 0..select.length() {
-            let option_element = select.get(index).expect("Element to exist");
+        for index in 0..element.length() {
+            let option_element = element.get(index).expect("Element to exist");
             let value = option_element
                 .get_attribute("value")
                 .expect("value to exist");
             select_options_values.push(value);
         }
 
-        assert_eq!(select_options_values, options);
+        assert_eq!(select_options_values, values);
     }
 
     #[wasm_bindgen_test]
-    async fn select_field_has_options_with_inner_html_of_options() {
-        let id = "test";
-        let options = vec!["First", "Second", "Third"];
-        let mut props = select_props_with_id(id);
-        props.options =
-            options.iter().map(|s| SelectOption::from(*s)).collect();
+    async fn select_element_has_given_options_inner_htmls() {
+        let inner_htmls = vec!["First", "Second", "Third"];
+        let options: Rc<[SelectOption]> = inner_htmls
+            .iter()
+            .map(|&inner_html| SelectOption {
+                value: AttrValue::from(format!("value-{}", inner_html)),
+                inner_html: AttrValue::from(inner_html),
+                ..Default::default()
+            })
+            .collect();
+        let mut props = select_props_with_id(TEST_ID);
+        props.options = options;
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_field", id))
-            .expect("Element to exist");
-        let select = element
+        let element = DOM::get_select_by_id(TEST_ID)
+            .expect("Select Element to exist")
             .dyn_into::<HtmlSelectElement>()
             .expect("Element to be Select");
 
         let mut select_options_inner_htmls = vec![];
-        for index in 0..select.length() {
-            let option_element = select.get(index).expect("Element to exist");
-            let inner_html = option_element.inner_html();
-            select_options_inner_htmls.push(inner_html);
+        for index in 0..element.length() {
+            let option_element = element.get(index).expect("Element to exist");
+            select_options_inner_htmls.push(option_element.inner_html());
         }
 
-        assert_eq!(select_options_inner_htmls, options);
+        assert_eq!(select_options_inner_htmls, inner_htmls);
     }
 
     #[wasm_bindgen_test]
-    async fn select_field_has_correct_selected_value_when_given() {
-        let id = "test";
+    async fn select_element_has_given_selected_option() {
         let options = vec!["First", "Second", "Third"];
         let selected = "Second";
-        let mut props = select_props_with_id(id);
+        let mut props = select_props_with_id(TEST_ID);
         props.options = options
             .iter()
             .map(|s| {
@@ -228,18 +210,16 @@ mod test {
             .collect();
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_field", id))
-            .expect("Element to exist");
-        let select = element
+        let element = DOM::get_select_by_id(TEST_ID)
+            .expect("Select Element to exist")
             .dyn_into::<HtmlSelectElement>()
             .expect("Element to be Select");
 
-        let selected_value = match select.selected_index() {
+        let selected_value = match element.selected_index() {
             i if i < 0 => None,
             i => {
-                let selected_element =
-                    select.get(i as u32).expect("Element to exist");
-                selected_element.get_attribute("value")
+                let option = element.get(i as u32).expect("Element to exist");
+                option.get_attribute("value")
             },
         };
 
@@ -247,11 +227,10 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn select_field_has_disabled_values_when_given() {
-        let id = "test";
+    async fn select_element_has_given_disabled_options() {
         let options = vec!["First", "Second", "Third", "Fourth"];
         let disabled = vec!["Second", "Fourth"];
-        let mut props = select_props_with_id(id);
+        let mut props = select_props_with_id(TEST_ID);
         props.options = options
             .iter()
             .map(|s| {
@@ -262,20 +241,20 @@ mod test {
             .collect();
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_field", id))
-            .expect("Element to exist");
-        let select = element
+        let element = DOM::get_select_by_id(TEST_ID)
+            .expect("Select Element to exist")
             .dyn_into::<HtmlSelectElement>()
             .expect("Element to be Select");
 
         let mut disabled_options = vec![];
-        for index in 0..select.length() {
-            let option_element = select.get(index).expect("Element to exist");
-            let option_element = option_element
+        for index in 0..element.length() {
+            let option = element
+                .get(index)
+                .expect("Element to exist")
                 .dyn_into::<HtmlOptionElement>()
                 .expect("Element to be Option");
-            if option_element.disabled() {
-                disabled_options.push(option_element.value())
+            if option.disabled() {
+                disabled_options.push(option.value())
             }
         }
 
@@ -283,11 +262,10 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn select_field_accepts_onchange_callback() {
-        let id = "test";
+    async fn component_executes_given_onchange() {
         let options = vec!["First", "Second", "Third", "Fourth"];
         let change_to = (2, "Third");
-        let mut props = select_props_with_id(id);
+        let mut props = select_props_with_id(TEST_ID);
         props.options = options
             .iter()
             .map(|v| SelectOption::from(*v).selected(*v == "Second"))
@@ -307,77 +285,45 @@ mod test {
         }));
         render_select(props).await;
 
-        let select =
-            DOM::get_html_select_by_id(&format!("{}_select_field", id))
-                .expect("Select to exist");
-        select.set_selected_index(change_to.0);
-        dispatch_change_event(&select).await;
+        let element = DOM::get_html_select_by_id(TEST_ID)
+            .expect("Html Select Element to exist");
+        element.set_selected_index(change_to.0);
+        dispatch_change_event(&element).await;
 
         let onchange_output = DOM::get_test_div().inner_html();
         assert_eq!(onchange_output, change_to.1);
     }
 
     #[wasm_bindgen_test]
-    async fn select_contains_label_with_expected_id() {
-        let id = "test";
-        let props = select_props_with_id(id);
+    async fn component_contains_label_element_for_select() {
+        let props = select_props_with_id(TEST_ID);
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_label", id));
+        let element = DOM::get_label_by_for(TEST_ID);
 
         assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn select_label_is_inside_select_section() {
-        let id = "test";
-        let props = select_props_with_id(id);
+    async fn label_element_is_inside_section() {
+        let props = select_props_with_id(TEST_ID);
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_label", id))
-            .expect("Element to exist");
+        let element =
+            DOM::get_label_by_for(TEST_ID).expect("Label Element to exist");
         let parent = element.parent_element().expect("Parent Element to exist");
 
-        assert_eq!(parent.id(), format!("{}_select", id));
+        assert_eq!(parent.tag_name(), "SECTION");
     }
 
     #[wasm_bindgen_test]
-    async fn select_label_is_label() {
-        let id = "test";
-        let props = select_props_with_id(id);
-        render_select(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_select_label", id))
-            .expect("Element to exist");
-
-        assert_eq!(element.tag_name().as_str(), "LABEL");
-    }
-
-    #[wasm_bindgen_test]
-    async fn select_label_has_for_with_select_field_id() {
-        let id = "test";
-        let props = select_props_with_id(id);
-        render_select(props).await;
-
-        let element = DOM::get_element_by_id(&format!("{}_select_label", id))
-            .expect("Element to exist");
-
-        assert_eq!(
-            element.get_attribute("for"),
-            Some(format!("{}_select_field", id))
-        );
-    }
-
-    #[wasm_bindgen_test]
-    async fn select_label_has_inner_html_with_label_text() {
-        let id = "test";
+    async fn label_element_has_inner_html_given_by_label_prop() {
         let label = "test label text";
-        let mut props = select_props_with_id(id);
+        let mut props = select_props_with_id(TEST_ID);
         props.label = AttrValue::from(label);
         render_select(props).await;
 
-        let element = DOM::get_element_by_id(&format!("{}_select_label", id))
-            .expect("Element to exist");
+        let element = DOM::get_label_by_for(TEST_ID).expect("Element to exist");
 
         assert_eq!(&element.inner_html(), label);
     }

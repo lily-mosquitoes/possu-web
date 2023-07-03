@@ -42,7 +42,7 @@ pub fn new_entry() -> Html {
     html! {
         <section id={"new_entry"}>
             <Select
-                id={"category"}
+                id={"category_select"}
                 label={"Category"}
                 options={Rc::from((*categories).clone())}
             />
@@ -93,6 +93,7 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
+    static CATEGORY_SELECT_ID: &str = "category_select";
     static DESCRIPTION_INPUT_ID: &str = "description_input";
     static VALUE_INPUT_ID: &str = "value_input";
 
@@ -100,53 +101,66 @@ mod test {
     // REPEAT INPUT TESTS
     // CATEGORY SELECT TESTS
     #[wasm_bindgen_test]
-    async fn category_select_field_with_label_exists() {
+    async fn page_contains_category_select_element() {
         render_new_entry().await;
 
-        let field = DOM::get_select_by_id("category_select_field");
-        let label = DOM::get_label_by_for("category_select_field");
+        let element = DOM::get_select_by_id(CATEGORY_SELECT_ID);
 
-        assert!(field.is_some() && label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn category_select_field_and_label_are_visible() {
+    async fn category_select_element_is_visible() {
         render_new_entry().await;
 
-        let field = DOM::get_select_by_id("category_select_field")
-            .expect("category select field to exist");
-        let label = DOM::get_label_by_for("category_select_field")
-            .expect("category select field label to exist");
+        let element = DOM::get_select_by_id(CATEGORY_SELECT_ID)
+            .expect("Select Element to exist");
 
-        assert!(
-            DOM::is_element_visible(&field) && DOM::is_element_visible(&label)
-        );
+        assert!(DOM::is_element_visible(&element));
     }
 
     #[wasm_bindgen_test]
-    async fn category_select_field_label_has_expected_inner_html() {
+    async fn page_contains_category_select_label_element() {
         render_new_entry().await;
 
-        let label = DOM::get_label_by_for("category_select_field")
-            .expect("category select field label to exist");
+        let element = DOM::get_label_by_for(CATEGORY_SELECT_ID);
 
-        assert_eq!(&label.inner_html(), "Category");
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn category_select_field_has_expected_options() {
+    async fn category_select_label_element_is_visible() {
         render_new_entry().await;
 
-        let field = DOM::get_select_by_id("category_select_field")
-            .expect("category select field to exist");
-        let select = field
+        let element = DOM::get_label_by_for(CATEGORY_SELECT_ID)
+            .expect("Label Element to exist");
+
+        assert!(DOM::is_element_visible(&element));
+    }
+
+    #[wasm_bindgen_test]
+    async fn category_select_label_element_has_expected_inner_html() {
+        render_new_entry().await;
+
+        let element = DOM::get_label_by_for(CATEGORY_SELECT_ID)
+            .expect("Label Element to exist");
+
+        assert_eq!(&element.inner_html(), "Category");
+    }
+
+    #[wasm_bindgen_test]
+    async fn category_select_element_has_expected_options() {
+        render_new_entry().await;
+
+        let element = DOM::get_select_by_id(CATEGORY_SELECT_ID)
+            .expect("Select Element to exist")
             .dyn_into::<HtmlSelectElement>()
             .expect("Element to be Select");
 
         let mut select_options = vec![];
-        for index in 0..select.length() {
-            let option_element = select.get(index).expect("Element to exist");
-            let inner_html = option_element.inner_html();
+        for index in 0..element.length() {
+            let option = element.get(index).expect("Element to exist");
+            let inner_html = option.inner_html();
             select_options.push(inner_html);
         }
 

@@ -44,7 +44,8 @@ pub(crate) struct DateTimeSelectProps {
     pub(crate) range: Rc<DateTimeRange<FixedOffset>>,
     pub(crate) preselect: Rc<DateTime<FixedOffset>>,
     #[prop_or_default]
-    pub(crate) onchange: Option<Callback<Option<DateTime<FixedOffset>>>>,
+    pub(crate) ondatetimechange:
+        Option<Callback<Option<DateTime<FixedOffset>>>>,
 }
 
 #[function_component(DateTimeSelect)]
@@ -186,7 +187,7 @@ pub(crate) fn datetime_select(props: &DateTimeSelectProps) -> Html {
     };
     let report_change = {
         let preselect = props.preselect.clone();
-        let onchange = props.onchange.clone();
+        let ondatetimechange = props.ondatetimechange.clone();
         move |year: Option<Year>, month: Option<Month>, day: Option<Day>| {
             let selected_date = match (year, month, day) {
                 (Some(year), Some(month), Some(day)) => {
@@ -198,7 +199,7 @@ pub(crate) fn datetime_select(props: &DateTimeSelectProps) -> Html {
                 _ => None,
             };
 
-            if let Some(event) = onchange {
+            if let Some(event) = ondatetimechange {
                 event.emit(selected_date);
             }
         }
@@ -209,7 +210,7 @@ pub(crate) fn datetime_select(props: &DateTimeSelectProps) -> Html {
     );
 
     html! {
-        <section id={format!("{}_datetime_select", props.id)}>
+        <section id={props.id.clone()}>
             <Select
                 id={format!("{}_year", props.id)}
                 label={"Year"}
@@ -286,7 +287,7 @@ mod test {
             label: AttrValue::from(""),
             range: Rc::new(DateTimeRange::from(date1, date2)),
             preselect: Rc::new(make_now()),
-            onchange: None,
+            ondatetimechange: None,
         }
     }
 
@@ -326,117 +327,116 @@ mod test {
         options_values
     }
 
-    static TEST_GIVEN_ID: &str = "test";
-    static TEST_SECTION_ID: &str = "test_datetime_select";
-    static TEST_YEAR_FIELD_ID: &str = "test_year_select_field";
-    static TEST_MONTH_FIELD_ID: &str = "test_month_select_field";
-    static TEST_DAY_FIELD_ID: &str = "test_day_select_field";
+    static TEST_ID: &str = "test_datetime_select";
+    static TEST_YEAR_SELECT_ID: &str = "test_datetime_select_year";
+    static TEST_MONTH_SELECT_ID: &str = "test_datetime_select_month";
+    static TEST_DAY_SELECT_ID: &str = "test_datetime_select_day";
 
     #[wasm_bindgen_test]
-    async fn datetime_select_is_section_with_expected_id() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn component_contains_section_element_with_expected_id() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let element = DOM::get_section_by_id(TEST_SECTION_ID);
+        let element = DOM::get_section_by_id(TEST_ID);
 
         assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn datetime_select_contains_year_select() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn component_contains_select_element_for_year() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let year = DOM::get_select_by_id(TEST_YEAR_FIELD_ID);
+        let element = DOM::get_select_by_id(TEST_YEAR_SELECT_ID);
 
-        assert!(year.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn datetime_select_contains_year_select_label() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn component_contains_select_label_element_for_year() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let year_label = DOM::get_label_by_for(TEST_YEAR_FIELD_ID);
+        let element = DOM::get_label_by_for(TEST_YEAR_SELECT_ID);
 
-        assert!(year_label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn year_select_label_has_expected_inner_html() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn year_select_label_element_has_expected_inner_html() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let year_label = DOM::get_label_by_for(TEST_YEAR_FIELD_ID)
-            .expect("Element to exist");
+        let element = DOM::get_label_by_for(TEST_YEAR_SELECT_ID)
+            .expect("Label Element to exist");
 
-        assert_eq!(year_label.inner_html(), "Year");
+        assert_eq!(element.inner_html(), "Year");
     }
 
     #[wasm_bindgen_test]
-    async fn datetime_select_contains_month_select() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn component_contains_select_element_for_month() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let month = DOM::get_select_by_id(TEST_MONTH_FIELD_ID);
+        let element = DOM::get_select_by_id(TEST_MONTH_SELECT_ID);
 
-        assert!(month.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn datetime_select_contains_month_select_label() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn component_contains_select_label_element_for_month() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let month_label = DOM::get_label_by_for(TEST_MONTH_FIELD_ID);
+        let element = DOM::get_label_by_for(TEST_MONTH_SELECT_ID);
 
-        assert!(month_label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn month_select_label_has_expected_inner_html() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn month_select_label_element_has_expected_inner_html() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let month_label = DOM::get_label_by_for(TEST_MONTH_FIELD_ID)
-            .expect("Element to exist");
+        let element = DOM::get_label_by_for(TEST_MONTH_SELECT_ID)
+            .expect("Label Element to exist");
 
-        assert_eq!(month_label.inner_html(), "Month");
+        assert_eq!(element.inner_html(), "Month");
     }
 
     #[wasm_bindgen_test]
-    async fn datetime_select_contains_day_select() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn component_contains_select_element_for_day() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let day = DOM::get_select_by_id(TEST_DAY_FIELD_ID);
+        let element = DOM::get_select_by_id(TEST_DAY_SELECT_ID);
 
-        assert!(day.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn datetime_select_contains_day_select_label() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn component_contains_select_label_element_for_day() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let day_label = DOM::get_label_by_for(TEST_DAY_FIELD_ID);
+        let element = DOM::get_label_by_for(TEST_DAY_SELECT_ID);
 
-        assert!(day_label.is_some());
+        assert!(element.is_some());
     }
 
     #[wasm_bindgen_test]
-    async fn day_select_label_has_expected_inner_html() {
-        let props = datetime_select_props_with_id(TEST_GIVEN_ID);
+    async fn day_select_label_element_has_expected_inner_html() {
+        let props = datetime_select_props_with_id(TEST_ID);
         render_datetime_select(props).await;
 
-        let day_label =
-            DOM::get_label_by_for(TEST_DAY_FIELD_ID).expect("Element to exist");
+        let element = DOM::get_label_by_for(TEST_DAY_SELECT_ID)
+            .expect("Label Element to exist");
 
-        assert_eq!(day_label.inner_html(), "Day");
+        assert_eq!(element.inner_html(), "Day");
     }
 
     #[wasm_bindgen_test]
-    async fn year_select_field_has_options_with_given_range() {
+    async fn year_select_element_has_options_with_given_range() {
         let tests = vec![
             // incorrect date order
             (make_date(2000, 1, 1), make_date(1999, 1, 1), 1..=0),
@@ -449,11 +449,11 @@ mod test {
         ];
 
         for (date1, date2, expected_options) in tests {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             render_datetime_select(props).await;
 
-            let select = DOM::get_html_select_by_id(TEST_YEAR_FIELD_ID)
+            let select = DOM::get_html_select_by_id(TEST_YEAR_SELECT_ID)
                 .expect("Select to exist");
 
             let select_options_values = collect_options_values_from(select);
@@ -466,7 +466,7 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn year_select_field_has_preselect_or_last_option_pre_selected() {
+    async fn year_select_element_has_preselect_or_last_option_pre_selected() {
         let tests = vec![
             // preselect should be selected when available
             (
@@ -485,12 +485,12 @@ mod test {
         ];
 
         for (date1, date2, preselect, expected_option) in tests {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let select = DOM::get_html_select_by_id(TEST_YEAR_FIELD_ID)
+            let select = DOM::get_html_select_by_id(TEST_YEAR_SELECT_ID)
                 .expect("Select to exist");
 
             let selected_option = select
@@ -506,7 +506,7 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn month_select_field_has_options_with_given_range_for_year() {
+    async fn month_select_element_has_options_with_given_range_for_year() {
         let tests = vec![
             // incorrect date order
             (
@@ -554,12 +554,12 @@ mod test {
         ];
 
         for (date1, date2, preselect, expected_options) in tests {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let select = DOM::get_html_select_by_id(TEST_MONTH_FIELD_ID)
+            let select = DOM::get_html_select_by_id(TEST_MONTH_SELECT_ID)
                 .expect("Select to exist");
 
             let select_options_values = collect_options_values_from(select);
@@ -572,7 +572,7 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn month_select_field_has_preselect_or_last_option_pre_selected() {
+    async fn month_select_element_has_preselect_or_last_option_pre_selected() {
         let tests = vec![
             // preselect should be selected when available
             (
@@ -591,12 +591,12 @@ mod test {
         ];
 
         for (date1, date2, preselect, expected_option) in tests {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let select = DOM::get_html_select_by_id(TEST_MONTH_FIELD_ID)
+            let select = DOM::get_html_select_by_id(TEST_MONTH_SELECT_ID)
                 .expect("Select to exist");
 
             let selected_option = select
@@ -612,8 +612,8 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn day_select_field_has_options_with_given_range_for_year_and_month()
-    {
+    async fn day_select_element_has_options_with_given_range_for_year_and_month(
+    ) {
         let tests = vec![
             // incorrect date order
             (
@@ -667,12 +667,12 @@ mod test {
         ];
 
         for (date1, date2, preselect, expected_options) in tests {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let select = DOM::get_html_select_by_id(TEST_DAY_FIELD_ID)
+            let select = DOM::get_html_select_by_id(TEST_DAY_SELECT_ID)
                 .expect("Select to exist");
 
             let select_options_values = collect_options_values_from(select);
@@ -685,7 +685,7 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn day_select_field_has_preselect_or_last_option_pre_selected() {
+    async fn day_select_element_has_preselect_or_last_option_pre_selected() {
         let tests = vec![
             // preselect should be selected when available
             (
@@ -704,12 +704,12 @@ mod test {
         ];
 
         for (date1, date2, preselect, expected_option) in tests {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let select = DOM::get_html_select_by_id(TEST_DAY_FIELD_ID)
+            let select = DOM::get_html_select_by_id(TEST_DAY_SELECT_ID)
                 .expect("Select to exist");
 
             let selected_option = select
@@ -764,20 +764,20 @@ mod test {
         for (date1, date2, preselect, change_year_to, expected_selected) in
             tests
         {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let year_select = DOM::get_html_select_by_id(TEST_YEAR_FIELD_ID)
+            let year_select = DOM::get_html_select_by_id(TEST_YEAR_SELECT_ID)
                 .expect("Select to exist");
             year_select.set_selected_index(year_index(change_year_to));
             dispatch_change_event(&year_select).await;
 
-            let month_select = DOM::get_html_select_by_id(TEST_MONTH_FIELD_ID)
+            let month_select = DOM::get_html_select_by_id(TEST_MONTH_SELECT_ID)
                 .expect("Select to exist");
             let selected_month = month_select.selected_index();
-            let day_select = DOM::get_html_select_by_id(TEST_DAY_FIELD_ID)
+            let day_select = DOM::get_html_select_by_id(TEST_DAY_SELECT_ID)
                 .expect("Select to exist");
             let selected_day = day_select.selected_index();
 
@@ -830,20 +830,20 @@ mod test {
         for (date1, date2, preselect, change_month_to, expected_selected) in
             tests
         {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let month_select = DOM::get_html_select_by_id(TEST_MONTH_FIELD_ID)
+            let month_select = DOM::get_html_select_by_id(TEST_MONTH_SELECT_ID)
                 .expect("Select to exist");
             month_select.set_selected_index(month_index(change_month_to));
             dispatch_change_event(&month_select).await;
 
-            let year_select = DOM::get_html_select_by_id(TEST_YEAR_FIELD_ID)
+            let year_select = DOM::get_html_select_by_id(TEST_YEAR_SELECT_ID)
                 .expect("Select to exist");
             let selected_year = year_select.selected_index();
-            let day_select = DOM::get_html_select_by_id(TEST_DAY_FIELD_ID)
+            let day_select = DOM::get_html_select_by_id(TEST_DAY_SELECT_ID)
                 .expect("Select to exist");
             let selected_day = day_select.selected_index();
 
@@ -885,20 +885,20 @@ mod test {
 
         for (date1, date2, preselect, change_day_to, expected_selected) in tests
         {
-            let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+            let mut props = datetime_select_props_with_id(TEST_ID);
             props.range = Rc::new(DateTimeRange::from(date1, date2));
             props.preselect = Rc::new(preselect);
             render_datetime_select(props).await;
 
-            let day_select = DOM::get_html_select_by_id(TEST_DAY_FIELD_ID)
+            let day_select = DOM::get_html_select_by_id(TEST_DAY_SELECT_ID)
                 .expect("Select to exist");
             day_select.set_selected_index(day_index(change_day_to));
             dispatch_change_event(&day_select).await;
 
-            let year_select = DOM::get_html_select_by_id(TEST_YEAR_FIELD_ID)
+            let year_select = DOM::get_html_select_by_id(TEST_YEAR_SELECT_ID)
                 .expect("Select to exist");
             let selected_year = year_select.selected_index();
-            let month_select = DOM::get_html_select_by_id(TEST_MONTH_FIELD_ID)
+            let month_select = DOM::get_html_select_by_id(TEST_MONTH_SELECT_ID)
                 .expect("Select to exist");
             let selected_month = month_select.selected_index();
 
@@ -912,10 +912,10 @@ mod test {
     }
 
     #[wasm_bindgen_test]
-    async fn onchange_returns_selected_datetime() {
+    async fn ondatetimechange_receives_selected_datetime() {
         let (date1, date2) = (make_date(1999, 1, 1), make_date(2003, 4, 8));
         let preselect = make_date(1999, 1, 1);
-        let test_onchange =
+        let test_ondatetimechange =
             Callback::from(|date: Option<DateTime<FixedOffset>>| {
                 if let Some(date) = date {
                     let test_div = DOM::get_test_div();
@@ -931,17 +931,17 @@ mod test {
         let day_index =
             |d: u32| -> i32 { (1..=31).position(|e| e == d).unwrap() as i32 };
 
-        let mut props = datetime_select_props_with_id(TEST_GIVEN_ID);
+        let mut props = datetime_select_props_with_id(TEST_ID);
         props.range = Rc::new(DateTimeRange::from(date1, date2));
         props.preselect = Rc::new(preselect);
-        props.onchange = Some(test_onchange);
+        props.ondatetimechange = Some(test_ondatetimechange);
         render_datetime_select(props).await;
 
-        let year_select = DOM::get_html_select_by_id(TEST_YEAR_FIELD_ID)
+        let year_select = DOM::get_html_select_by_id(TEST_YEAR_SELECT_ID)
             .expect("Select to exist");
-        let month_select = DOM::get_html_select_by_id(TEST_MONTH_FIELD_ID)
+        let month_select = DOM::get_html_select_by_id(TEST_MONTH_SELECT_ID)
             .expect("Select to exist");
-        let day_select = DOM::get_html_select_by_id(TEST_DAY_FIELD_ID)
+        let day_select = DOM::get_html_select_by_id(TEST_DAY_SELECT_ID)
             .expect("Select to exist");
 
         enum ChangeOption {

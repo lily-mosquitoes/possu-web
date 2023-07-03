@@ -154,7 +154,7 @@ mod test {
             DOM::get_input_by_id(TEST_ID).expect("Input Element to exist");
         let parent = element.parent_element().expect("Parent Element to exist");
 
-        assert_eq!(parent.id(), format!("{}_section", TEST_ID));
+        assert_eq!(parent.tag_name(), "SECTION");
     }
 
     #[wasm_bindgen_test]
@@ -314,7 +314,7 @@ mod test {
             DOM::get_label_by_for(TEST_ID).expect("Label Element to exist");
         let parent = element.parent_element().expect("Parent Element to exist");
 
-        assert_eq!(parent.id(), format!("{}_section", TEST_ID));
+        assert_eq!(parent.tag_name(), "SECTION");
     }
 
     #[wasm_bindgen_test]
