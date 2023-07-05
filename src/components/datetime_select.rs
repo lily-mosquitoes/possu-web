@@ -163,7 +163,7 @@ pub(crate) fn datetime_select(props: &DateTimeSelectProps) -> Html {
         let selected_year = selected_year.clone();
         Callback::from(move |e: Event| {
             if let Some(value) = onchange(e) {
-                selected_year.set(Some(value));
+                selected_year.set(Some(value as Year));
             }
         })
     };
@@ -181,36 +181,39 @@ pub(crate) fn datetime_select(props: &DateTimeSelectProps) -> Html {
         let selected_day = selected_day.clone();
         Callback::from(move |e: Event| {
             if let Some(value) = onchange(e) {
-                selected_day.set(Some(value as u32));
+                selected_day.set(Some(value as Day));
             }
         })
     };
+    let selected_datetime =
+        match (*selected_year, **selected_month, *selected_day) {
+            (Some(year), Some(month), Some(day)) => {
+                props.preselect.with_year(year).and_then(|date| {
+                    date.with_month(month as u32)
+                        .and_then(|date| date.with_day(day))
+                })
+            },
+            _ => None,
+        };
     let report_change = {
-        let preselect = props.preselect.clone();
+        let selected_datetime = selected_datetime.clone();
         let ondatetimechange = props.ondatetimechange.clone();
-        move |year: Option<Year>, month: Option<Month>, day: Option<Day>| {
-            let selected_date = match (year, month, day) {
-                (Some(year), Some(month), Some(day)) => {
-                    preselect.with_year(year).and_then(|date| {
-                        date.with_month(month as u32)
-                            .and_then(|date| date.with_day(day))
-                    })
-                },
-                _ => None,
-            };
-
+        move || {
             if let Some(event) = ondatetimechange {
-                event.emit(selected_date);
+                event.emit(selected_datetime);
             }
         }
     };
     use_effect_with_deps(
-        |(year, month, day)| report_change(**year, ***month, **day),
+        |_| report_change(),
         (selected_year.clone(), selected_month.clone(), selected_day.clone()),
     );
 
     html! {
-        <section id={props.id.clone()}>
+        <section
+            id={props.id.clone()}
+            selected_datetime={selected_datetime.and_then(|d| Some(d.to_rfc2822()))}
+        >
             <Select
                 id={format!("{}_year", props.id)}
                 label={"Year"}
@@ -912,6 +915,118 @@ mod test {
     }
 
     #[wasm_bindgen_test]
+    async fn component_section_element_has_option_attribute_selected_datetime()
+    {
+        let tests = vec![
+            // incorrect date order
+            (
+                make_date(2000, 1, 1),
+                make_date(1999, 1, 1),
+                make_date(2000, 1, 1),
+                false,
+            ),
+            // single day range is correct
+            (
+                make_date(1999, 1, 4),
+                make_date(1999, 1, 4),
+                make_date(1999, 1, 4),
+                true,
+            ),
+            // multi day range is correct
+            (
+                make_date(1999, 1, 2),
+                make_date(1999, 1, 20),
+                make_date(1999, 1, 17),
+                true,
+            ),
+        ];
+
+        for (date1, date2, preselect, should_be_some) in tests {
+            let mut props = datetime_select_props_with_id(TEST_ID);
+            props.range = Rc::new(DateTimeRange::from(date1, date2));
+            props.preselect = Rc::new(preselect);
+            render_datetime_select(props).await;
+
+            let element = DOM::get_section_by_id(TEST_ID)
+                .expect("Section Element to exist");
+
+            let attribute = element.get_attribute("selected_datetime");
+
+            assert_eq!(attribute.is_some(), should_be_some);
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn component_section_element_attribute_selected_datetime_contains_selected_datetime(
+    ) {
+        let (date1, date2) = (make_date(1999, 1, 1), make_date(2003, 4, 8));
+        let preselect = make_date(1999, 1, 1);
+
+        let year_index = |y: i32| -> i32 {
+            (1999..=2003).position(|e| e == y).unwrap() as i32
+        };
+        let month_index =
+            |m: u32| -> i32 { (1..=12).position(|e| e == m).unwrap() as i32 };
+        let day_index =
+            |d: u32| -> i32 { (1..=31).position(|e| e == d).unwrap() as i32 };
+
+        let mut props = datetime_select_props_with_id(TEST_ID);
+        props.range = Rc::new(DateTimeRange::from(date1, date2));
+        props.preselect = Rc::new(preselect);
+        render_datetime_select(props).await;
+
+        let year_select = DOM::get_html_select_by_id(TEST_YEAR_SELECT_ID)
+            .expect("Select to exist");
+        let month_select = DOM::get_html_select_by_id(TEST_MONTH_SELECT_ID)
+            .expect("Select to exist");
+        let day_select = DOM::get_html_select_by_id(TEST_DAY_SELECT_ID)
+            .expect("Select to exist");
+
+        enum ChangeOption {
+            Year(i32),
+            Month(u32),
+            Day(u32),
+            None,
+        }
+
+        let tests = vec![
+            (ChangeOption::None, preselect),
+            (ChangeOption::Year(2000), make_date(2000, 1, 1)),
+            (ChangeOption::Month(2), make_date(2000, 2, 1)),
+            (ChangeOption::Day(29), make_date(2000, 2, 29)),
+            (ChangeOption::Year(1999), make_date(1999, 2, 28)),
+            (ChangeOption::Month(6), make_date(1999, 6, 28)),
+            (ChangeOption::Year(2003), make_date(2003, 4, 8)),
+        ];
+
+        for (to_change, expected_selected) in tests {
+            match to_change {
+                ChangeOption::Year(year) => {
+                    year_select.set_selected_index(year_index(year));
+                    dispatch_change_event(&year_select).await;
+                },
+                ChangeOption::Month(month) => {
+                    month_select.set_selected_index(month_index(month));
+                    dispatch_change_event(&month_select).await;
+                },
+                ChangeOption::Day(day) => {
+                    day_select.set_selected_index(day_index(day));
+                    dispatch_change_event(&day_select).await;
+                },
+                ChangeOption::None => (),
+            }
+
+            let component_element = DOM::get_section_by_id(TEST_ID)
+                .expect("Section Element to exist");
+            let selected = component_element
+                .get_attribute("selected_datetime")
+                .expect("Attribute to exist");
+
+            assert_eq!(selected, expected_selected.to_rfc2822());
+        }
+    }
+
+    #[wasm_bindgen_test]
     async fn ondatetimechange_receives_selected_datetime() {
         let (date1, date2) = (make_date(1999, 1, 1), make_date(2003, 4, 8));
         let preselect = make_date(1999, 1, 1);
@@ -948,9 +1063,11 @@ mod test {
             Year(i32),
             Month(u32),
             Day(u32),
+            None,
         }
 
         let tests = vec![
+            (ChangeOption::None, preselect),
             (ChangeOption::Year(2000), make_date(2000, 1, 1)),
             (ChangeOption::Month(2), make_date(2000, 2, 1)),
             (ChangeOption::Day(29), make_date(2000, 2, 29)),
@@ -973,6 +1090,7 @@ mod test {
                     day_select.set_selected_index(day_index(day));
                     dispatch_change_event(&day_select).await;
                 },
+                ChangeOption::None => (),
             }
 
             let onchange_output = DOM::get_test_div().inner_html();

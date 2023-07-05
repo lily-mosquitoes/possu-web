@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
-use chrono::TimeZone;
+use chrono::Utc;
+use chrono_tz::Tz;
 use wasm_bindgen_futures::spawn_local;
 use yew::{
     function_component,
@@ -18,7 +19,10 @@ use crate::{
         Select,
     },
     requests,
-    types::select::SelectOption,
+    types::{
+        datetime::DateTimeRange,
+        select::SelectOption,
+    },
 };
 
 #[function_component(NewEntry)]
@@ -39,8 +43,21 @@ pub fn new_entry() -> Html {
         });
     }
 
+    let timezone = Tz::Europe__Helsinki;
+    let now = Utc::now().with_timezone(&timezone).fixed_offset();
+    let datetime_select_range = DateTimeRange::from(
+        now - chrono::Duration::days(2 * 365),
+        now + chrono::Duration::days(2 * 365),
+    );
+
     html! {
         <section id={"new_entry"}>
+            <DateTimeSelect
+                id={"datetime_select"}
+                label={"Date"}
+                range={Rc::from(datetime_select_range)}
+                preselect={Rc::from(now)}
+            />
             <Select
                 id={"category_select"}
                 label={"Category"}
@@ -62,6 +79,13 @@ pub fn new_entry() -> Html {
 mod test {
     use std::time::Duration;
 
+    use chrono::{
+        DateTime,
+        Datelike,
+        FixedOffset,
+        Utc,
+    };
+    use chrono_tz::Tz;
     use wasm_bindgen::JsCast;
     use wasm_bindgen_test::{
         wasm_bindgen_test,
@@ -93,11 +117,192 @@ mod test {
         yew::platform::time::sleep(Duration::from_millis(10)).await;
     }
 
+    static DATETIME_SELECT_ID: &str = "datetime_select";
     static CATEGORY_SELECT_ID: &str = "category_select";
     static DESCRIPTION_INPUT_ID: &str = "description_input";
     static VALUE_INPUT_ID: &str = "value_input";
 
     // DATETIME INPUT TESTS
+    #[wasm_bindgen_test]
+    async fn page_contains_datetime_select_elements() {
+        render_new_entry().await;
+
+        for postfix in &["year", "month", "day"] {
+            let id = format!("{}_{}", DATETIME_SELECT_ID, postfix);
+            let element = DOM::get_select_by_id(&id);
+
+            assert!(element.is_some());
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_elements_are_visible() {
+        render_new_entry().await;
+
+        for postfix in &["year", "month", "day"] {
+            let id = format!("{}_{}", DATETIME_SELECT_ID, postfix);
+            let element =
+                DOM::get_select_by_id(&id).expect("Select Element to exist");
+
+            assert!(DOM::is_element_visible(&element));
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn page_contains_datetime_select_label_elements() {
+        render_new_entry().await;
+
+        for postfix in &["year", "month", "day"] {
+            let id = format!("{}_{}", DATETIME_SELECT_ID, postfix);
+            let element = DOM::get_label_by_for(&id);
+
+            assert!(element.is_some());
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_label_elements_are_visible() {
+        render_new_entry().await;
+
+        for postfix in &["year", "month", "day"] {
+            let id = format!("{}_{}", DATETIME_SELECT_ID, postfix);
+            let element =
+                DOM::get_label_by_for(&id).expect("Label Element to exist");
+
+            assert!(DOM::is_element_visible(&element));
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_label_elements_have_expected_inner_htmls() {
+        render_new_entry().await;
+
+        for (postfix, expected_inner_html) in
+            &[("year", "Year"), ("month", "Month"), ("day", "Day")]
+        {
+            let id = format!("{}_{}", DATETIME_SELECT_ID, postfix);
+            let element =
+                DOM::get_label_by_for(&id).expect("Label Element to exist");
+
+            assert_eq!(&element.inner_html(), expected_inner_html);
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_component_has_attribute_selected_datetime() {
+        render_new_entry().await;
+
+        let element = DOM::get_section_by_id(DATETIME_SELECT_ID)
+            .expect("Section Element to exist");
+
+        let attribute = element.get_attribute("selected_datetime");
+
+        assert!(attribute.is_some());
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_component_allows_2_years_before_and_after_now() {
+        render_new_entry().await;
+
+        let id = format!("{}_year", DATETIME_SELECT_ID);
+        let element = DOM::get_select_by_id(&id)
+            .expect("Select Element to exist")
+            .dyn_into::<HtmlSelectElement>()
+            .expect("Element to be Select");
+
+        let mut available_years = vec![];
+        for index in 0..element.length() {
+            let option = element.get(index as u32).expect("Element to exist");
+            available_years.push(option.inner_html());
+        }
+
+        let expected_start = Utc::now()
+            .with_timezone(&Tz::Europe__Helsinki)
+            .fixed_offset()
+            - chrono::Duration::days(2 * 365);
+        let expected_end = Utc::now()
+            .with_timezone(&Tz::Europe__Helsinki)
+            .fixed_offset()
+            + chrono::Duration::days(2 * 365);
+        let expected_available_years: Vec<String> = (expected_start.year()
+            ..=expected_end.year())
+            .map(|v| v.to_string())
+            .collect();
+
+        assert_eq!(available_years, expected_available_years);
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_component_has_current_datetime_preselected_in_selected_datetime_attribute(
+    ) {
+        render_new_entry().await;
+
+        let element = DOM::get_section_by_id(DATETIME_SELECT_ID)
+            .expect("Section Element to exist");
+
+        let attribute = element
+            .get_attribute("selected_datetime")
+            .expect("Attribute to exist");
+
+        let now = Utc::now()
+            .with_timezone(&Tz::Europe__Helsinki)
+            .fixed_offset();
+
+        assert_eq!(attribute, now.to_rfc2822());
+    }
+
+    #[wasm_bindgen_test]
+    async fn datetime_select_component_has_current_datetime_preselected_in_select_elements(
+    ) {
+        render_new_entry().await;
+
+        #[derive(Debug, PartialEq, Default)]
+        struct Selected {
+            year: Option<String>,
+            month: Option<String>,
+            day: Option<String>,
+        }
+        impl Selected {
+            fn change(&mut self, attribute: &str, value: Option<String>) {
+                match attribute {
+                    "year" => self.year = value,
+                    "month" => self.month = value,
+                    "day" => self.day = value,
+                    _ => panic!("no such attribute"),
+                }
+            }
+
+            fn with_datetime(datetime: &DateTime<FixedOffset>) -> Self {
+                Self {
+                    year: Some(datetime.year().to_string()),
+                    month: Some(datetime.month().to_string()),
+                    day: Some(datetime.day().to_string()),
+                }
+            }
+        }
+
+        let mut selected = Selected::default();
+
+        for postfix in &["year", "month", "day"] {
+            let id = format!("{}_{}", DATETIME_SELECT_ID, postfix);
+            let element = DOM::get_select_by_id(&id)
+                .expect("Select Element to exist")
+                .dyn_into::<HtmlSelectElement>()
+                .expect("Element to be Select");
+
+            let selected_index = element.selected_index();
+            let option = element
+                .get(selected_index as u32)
+                .expect("Element to exist");
+            selected.change(postfix, option.get_attribute("value"));
+        }
+
+        let now = Utc::now().with_timezone(&Tz::Europe__Helsinki);
+        let expected_selected = Selected::with_datetime(&now.fixed_offset());
+
+        assert_eq!(selected, expected_selected);
+    }
+
     // REPEAT INPUT TESTS
     // CATEGORY SELECT TESTS
     #[wasm_bindgen_test]
