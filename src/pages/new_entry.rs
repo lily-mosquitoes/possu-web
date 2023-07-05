@@ -45,7 +45,7 @@ pub fn new_entry() -> Html {
 
     let timezone = Tz::Europe__Helsinki;
     let now = Utc::now().with_timezone(&timezone).fixed_offset();
-    let datetime_select_range = DateTimeRange::from(
+    let selectable_range = DateTimeRange::from(
         now - chrono::Duration::days(2 * 365),
         now + chrono::Duration::days(2 * 365),
     );
@@ -55,7 +55,7 @@ pub fn new_entry() -> Html {
             <DateTimeSelect
                 id={"datetime_select"}
                 label={"Date"}
-                range={Rc::from(datetime_select_range)}
+                range={Rc::from(selectable_range)}
                 preselect={Rc::from(now)}
             />
             <Select
