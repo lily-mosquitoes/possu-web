@@ -304,6 +304,10 @@ mod test {
     }
 
     // REPEAT INPUT TESTS
+    fn repeat_input_tests() {
+        todo!();
+    }
+
     // CATEGORY SELECT TESTS
     #[wasm_bindgen_test]
     async fn page_contains_category_select_element() {
